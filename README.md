@@ -3,7 +3,7 @@
 
 An open-source command line tool for practicing touch typing and programming, supported and developed by [Chambey](https://chambey.com/about/ "The public interest technology company") and open-source contributors.
 
-#### About Hunting & Pecklin
+#### Hunting & Pecklin
 Pecklin is derived from an idea meant to reduce the hunt and peck method of typing while learning to code.
 
 
