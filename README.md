@@ -36,3 +36,5 @@ The Pecklin project is in its’ early stage of developing a minimum viable prod
 [Typing.io](https://typing.io/) - Typing Practice for Programmers
 
 [Charm](https://charm.sh/) - We build tools to make the command line glamorous.
+
+### [Donate with Crypto](https://commerce.coinbase.com/checkout/449022e9-3770-4093-a083-c5087a40c703)
