@@ -1,7 +1,7 @@
 # Pecklin
 ### The segue into the world of computer science 
 
-An open-source command line tool for practicing touch typing and programming, supported and developed by [Chambey](https://chambey.com/about/ "The public interest technology company") and open-source contributors.
+An open-source command line tool for practicing touch typing and programming, supported and developed by [Chambey](https://chambey.com/about/ "The Public Interest Technology Company") and open-source contributors.
 
 #### Hunting & Pecklin
 Pecklin is derived from an idea meant to reduce the hunt and peck method of typing while learning to code.
@@ -9,7 +9,7 @@ Pecklin is derived from an idea meant to reduce the hunt and peck method of typi
 
 ### Peck + ~Kotlin~ = Pecklin
 
-Although the origins of Pecklin stem from a pet project created for learning The Kotlin Programming Language, we have switched to primarily focus on using Go for the short term. We are looking forward to experimenting with the Charm libraries.
+Although the origins of Pecklin stem from a pet project created for learning [The Kotlin Programming Language](https://kotlinlang.org/), we have switched to primarily focus on using Go for the short term. We are looking forward to experimenting with the Charm libraries.
 
 Our knowledge base will span to other languages as the project matures. 
 
@@ -29,10 +29,10 @@ Pecklin intends to:
 
 The Pecklin project is in its’ early stage of developing a minimum viable product and looks to be similar to, and perhaps extends from:
 
-GNU Typist - (also called gtypist) is a universal typing tutor. You can learn correct typing and improve your skills by practicing its exercises on a regular basis.
+[GNU Typist](https://www.gnu.org/software/gtypist/) - (also called gtypist) is a universal typing tutor. You can learn correct typing and improve your skills by practicing its exercises on a regular basis.
 
-Mltype - Command line tool for improving typing speed and accuracy. The main goal is to help programmers practice programming languages.
+[Mltype](https://mltype.readthedocs.io/en/latest/) - Command line tool for improving typing speed and accuracy. The main goal is to help programmers practice programming languages.
 
-Typing.io - Typing Practice for Programmers
+[Typing.io](https://typing.io/) - Typing Practice for Programmers
 
-Charm - We build tools to make the command line glamorous.
+[Charm](https://charm.sh/) - We build tools to make the command line glamorous.
