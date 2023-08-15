@@ -1,2 +1,2 @@
-welcome to this go learning touch typing practice
-go has a fast compile time compared to other languages such as python
+the quick brown fox
+the quick brown lion

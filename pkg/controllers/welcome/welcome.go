@@ -3,6 +3,7 @@ package welcome
 import (
 	"bufio"
 	"fmt"
+	"github.com/eiannone/keyboard"
 	"main.go/pkg/controllers/typing"
 	"main.go/pkg/utils/clear"
 	"os"
@@ -15,32 +16,42 @@ const (
 func WelcomeScreen() {
 	clear.CallClear()
 	fmt.Println("Welcome to lesson1")
-	fmt.Println("\nPress RETURN or SPACE to continue to typing practice.")
+	fmt.Println("\nPress RETURN or SPACE to continue to typing practice. Press ESC to quit")
+
+	if err := keyboard.Open(); err != nil {
+		panic(err)
+	}
+	defer func() {
+		_ = keyboard.Close()
+	}()
 
 	file, err := os.Open("sentences.txt")
 	if err != nil {
-		fmt.Println("Error opening the file:", err)
 		return
 	}
 	defer file.Close()
 
-	reader := bufio.NewReader(os.Stdin)
-
 	for {
-		key, err := reader.ReadByte()
+		_, key, err := keyboard.GetKey()
 		if err != nil {
-			fmt.Println("Error reading input:", err)
-			return
+			break
 		}
 
-		switch key {
-		case '\r', '\n', ' ': // RETURN, NEWLINE, SPACE
+		if key == keyboard.KeySpace || key == keyboard.KeyEnter {
+			err := keyboard.Close()
+			if err != nil {
+				break
+			}
 			startTypingPractice(file)
-			return
-		default:
-			fmt.Println("Press RETURN or SPACE to continue to typing practice.")
+		}
+
+		if key == keyboard.KeyEsc {
+			keyboard.Close()
+			fmt.Println("Exiting lesson 1 ...")
+			break
 		}
 	}
+
 }
 
 func startTypingPractice(file *os.File) {
