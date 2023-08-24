@@ -4,18 +4,18 @@ import (
 	"fmt"
 	"github.com/eiannone/keyboard"
 	typingSpeed2 "main.go/pkg/utils/typingSpeed"
-	"os"
 	"time"
 )
 
 const (
-	introDelay = 1 * time.Second
+	delay = 1 * time.Second
 )
 
 func TypingPractice(sentences []string) {
 	fmt.Println("Try this:")
-	time.Sleep(introDelay)
-	inputWords := ""
+	time.Sleep(delay)
+
+	inputWords := "" //variable to merge all words in the sentences to be used in calculating typing speed
 
 	if err := keyboard.Open(); err != nil {
 		panic(err)
@@ -24,20 +24,15 @@ func TypingPractice(sentences []string) {
 		_ = keyboard.Close()
 	}()
 
-	file, err := os.Open("sentences.txt")
-	if err != nil {
-		return
-	}
-	defer file.Close()
-
 	startTime := time.Now()
 	exitPractice := false // Variable to track if Esc key was pressed
 
 	for _, sentence := range sentences {
 		fmt.Printf("\n\n%s\n", sentence)
-		var characters []rune
-		var sentenceCharacters = []rune(sentence)
 
+		var inputCharacters []rune
+
+		var sentenceCharacters = []rune(sentence)
 		for {
 			char, key, err := keyboard.GetKey()
 			if err != nil {
@@ -45,27 +40,26 @@ func TypingPractice(sentences []string) {
 			}
 
 			if key == keyboard.KeyEnter {
-				inputWords += " "
 				break
 			} else if key == keyboard.KeyEsc {
 				fmt.Printf("\n\nExiting lesson 1 ...\n")
-				exitPractice = true // Set the exit flag
+				exitPractice = true
 				break
 			} else if key == keyboard.KeySpace {
 				inputWords += " "
-				characters = append(characters, ' ')
+				inputCharacters = append(inputCharacters, ' ')
 			} else {
 				inputWords += string(char)
-				characters = append(characters, char)
+				inputCharacters = append(inputCharacters, char)
 			}
 
-			if len(characters) > len(sentenceCharacters) {
+			if len(inputCharacters) > len(sentenceCharacters) {
 				break
 			}
 
-			lastCharacter := characters[len(characters)-1]
+			lastCharacter := inputCharacters[len(inputCharacters)-1]
 
-			if characters[len(characters)-1] == sentenceCharacters[len(characters)-1] {
+			if inputCharacters[len(inputCharacters)-1] == sentenceCharacters[len(inputCharacters)-1] {
 				fmt.Printf(string(lastCharacter))
 			} else {
 				fmt.Printf("^")
@@ -77,6 +71,7 @@ func TypingPractice(sentences []string) {
 		}
 	}
 
+	// if user didn't exit calculate typing speed
 	if !exitPractice {
 		endTime := time.Now()
 		duration := endTime.Sub(startTime)
