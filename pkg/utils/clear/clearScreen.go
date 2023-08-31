@@ -22,7 +22,7 @@ func init() {
 	}
 }
 
-func CallClear() {
+func ClearScreen() {
 	value, ok := clear[runtime.GOOS] //runtime.GOOS -> linux, windows, darwin etc.
 	if ok {
 		value() //we execute it

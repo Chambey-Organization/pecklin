@@ -9,15 +9,12 @@ import (
 	"os"
 )
 
-const (
-	exitCommand = "exit"
-)
-
 func WelcomeScreen() {
-	clear.CallClear()
+	clear.ClearScreen()
 	fmt.Println("Welcome to lesson1")
 	fmt.Println("\nPress RETURN or SPACE to continue to typing practice. Press ESC to quit")
 
+	//open keyboard instance to start reading user input
 	if err := keyboard.Open(); err != nil {
 		panic(err)
 	}
@@ -25,6 +22,7 @@ func WelcomeScreen() {
 		_ = keyboard.Close()
 	}()
 
+	//Read a file containing all the sentences  for lesson 1
 	file, err := os.Open("sentences.txt")
 	if err != nil {
 		return
@@ -38,6 +36,7 @@ func WelcomeScreen() {
 		}
 
 		if key == keyboard.KeySpace || key == keyboard.KeyEnter {
+			//close keyboard before navigating to start typing
 			err := keyboard.Close()
 			if err != nil {
 				break
@@ -55,12 +54,12 @@ func WelcomeScreen() {
 }
 
 func startTypingPractice(file *os.File) {
+	//Read the file provided and break the sentences into a list for easy manipulation
 	scanner := bufio.NewScanner(file)
 	var sentences []string
 	for scanner.Scan() {
 		sentences = append(sentences, scanner.Text())
 	}
-
-	clear.CallClear()
+	clear.ClearScreen()
 	typing.TypingPractice(sentences)
 }
