@@ -3,10 +3,11 @@ package welcome
 import (
 	"bufio"
 	"fmt"
+	"os"
+
 	"github.com/eiannone/keyboard"
 	"main.go/pkg/controllers/typing"
 	"main.go/pkg/utils/clear"
-	"os"
 )
 
 func WelcomeScreen() {
@@ -22,13 +23,6 @@ func WelcomeScreen() {
 		_ = keyboard.Close()
 	}()
 
-	//Read a file containing all the sentences  for lesson 1
-	file, err := os.Open("sentences.txt")
-	if err != nil {
-		return
-	}
-	defer file.Close()
-
 	for {
 		_, key, err := keyboard.GetKey()
 		if err != nil {
@@ -41,7 +35,9 @@ func WelcomeScreen() {
 			if err != nil {
 				break
 			}
-			startTypingPractice(file)
+
+			startTypingPractice("sentences.txt")
+
 		}
 
 		if key == keyboard.KeyEsc {
@@ -53,7 +49,14 @@ func WelcomeScreen() {
 
 }
 
-func startTypingPractice(file *os.File) {
+func startTypingPractice(lesson string) {
+	//Read a file containing all the sentences  for lesson 1
+	file, err := os.Open(lesson)
+	if err != nil {
+		return
+	}
+	defer file.Close()
+
 	//Read the file provided and break the sentences into a list for easy manipulation
 	scanner := bufio.NewScanner(file)
 	var sentences []string
