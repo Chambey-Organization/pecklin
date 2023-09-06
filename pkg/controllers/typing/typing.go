@@ -5,6 +5,7 @@ import (
 	"time"
 
 	"github.com/eiannone/keyboard"
+	"main.go/database"
 	"main.go/pkg/models"
 	"main.go/pkg/utils/typingSpeed"
 )
@@ -43,6 +44,8 @@ func TypingPractice(lessonData *models.Lesson) {
 	// if user didn't exit calculate typing speed
 	if !exitPractice {
 		displayTypingSpeed(startTime, inputWords, lessonData.Title)
+		
+
 	}
 }
 
@@ -92,4 +95,5 @@ func displayTypingSpeed(startTime time.Time, inputWords string, lessonTitle stri
 	duration := endTime.Sub(startTime)
 	typingSpeed := typingSpeed.CalculateTypingSpeed(inputWords, duration)
 	fmt.Printf("\n\nCongratulations! You have completed lesson %s\nYour typing speed is: %.2f WPM\n", lessonTitle, typingSpeed)
+	database.CompleteLesson(lessonTitle)
 }

@@ -43,7 +43,7 @@ import (
 
 		if key == keyboard.KeyEsc {
 			keyboard.Close()
-			fmt.Println("Exiting lesson 1 ...")
+			fmt.Printf("Exiting lesson %s...", lessonData.Title)
 			break
 		}
 	}

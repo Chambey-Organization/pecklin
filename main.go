@@ -8,11 +8,13 @@ import (
 	"strings"
 	"time"
 
+	"main.go/database"
 	"main.go/pkg/controllers/welcome"
 	"main.go/pkg/models"
 )
 
 func main() {
+	database.InitializeDatabase()
 	root := "lessons"
 
 	err := filepath.Walk(root, func(path string, info os.FileInfo, err error) error {
