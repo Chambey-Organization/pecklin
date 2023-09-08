@@ -9,9 +9,8 @@ import (
 	"main.go/pkg/utils/clear"
 )
 
-func WelcomeScreen(lessonData *models.Lesson) {
+func WelcomeScreen(lessonData *models.Lesson, hasExitedLesson *bool) {
 	clear.ClearScreen()
-
 	fmt.Printf("Welcome to lesson %s\n", lessonData.Title)
 	fmt.Println("\nPress RETURN or SPACE to continue to typing practice. Press ESC to quit")
 
@@ -40,7 +39,8 @@ func WelcomeScreen(lessonData *models.Lesson) {
 
 		if key == keyboard.KeyEsc {
 			keyboard.Close()
-			fmt.Printf("Exiting lesson %s...", lessonData.Title)
+			*hasExitedLesson = true
+			fmt.Printf("Exiting lesson %s...\n", lessonData.Title)
 			break
 		}
 	}

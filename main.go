@@ -2,7 +2,7 @@ package main
 
 import (
 	"bufio"
-	"fmt"
+	"errors"
 	"os"
 	"path/filepath"
 	"strings"
@@ -17,10 +17,14 @@ func main() {
 	database.InitializeDatabase()
 	root := "lessons"
 
+	var exitErr error
+
 	err := filepath.Walk(root, func(path string, info os.FileInfo, err error) error {
 		if err != nil {
 			return err
 		}
+
+		hasExitedLesson := false
 
 		// Check if the path is a file and not a directory
 		if !info.IsDir() {
@@ -30,7 +34,7 @@ func main() {
 			lessons := database.ReadCompletedLesson()
 
 			// Check if the lesson title exists in the lessons slice
-			if lessonExists(fileNameWithoutExt, lessons) {
+			if lessonComplete(fileNameWithoutExt, lessons) {
 				return nil
 			}
 			// Read the contents of the file into a string slice
@@ -46,20 +50,29 @@ func main() {
 			}
 
 			// Pass the map to the WelcomeScreen function
-			welcome.WelcomeScreen(&lessonData)
+			welcome.WelcomeScreen(&lessonData, &hasExitedLesson)
+
+			//check if user exited the lesson
+			if hasExitedLesson {
+				exitErr = errors.New("user exited the lesson")
+				return exitErr
+			}
 			time.Sleep(3 * time.Second)
 		}
 		return nil
 	})
 
+	if exitErr != nil {
+		return
+	}
+
 	if err != nil {
-		fmt.Printf("Error: %v\n", err)
 		return
 	}
 }
 
 // compare if lesson exists
-func lessonExists(lessonTitle string, lessons []models.LessonDTO) bool {
+func lessonComplete(lessonTitle string, lessons []models.LessonDTO) bool {
 	for _, lesson := range lessons {
 		if lesson.Title == lessonTitle {
 			return true
