@@ -17,7 +17,8 @@ func InitializeDatabase()  {
     _, err = db.Exec(`
         CREATE TABLE IF NOT EXISTS lessons (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
-            lesson TEXT UNIQUE
+            lesson TEXT UNIQUE,
+            speed TEXT
         )
     `)
     if err != nil {

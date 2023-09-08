@@ -9,14 +9,11 @@ import (
 	"main.go/pkg/utils/clear"
 )
 
-	func WelcomeScreen(lessonData *models.Lesson) {
+func WelcomeScreen(lessonData *models.Lesson) {
 	clear.ClearScreen()
 
-
-
-    fmt.Printf("Welcome to lesson %s\n", lessonData.Title)
+	fmt.Printf("Welcome to lesson %s\n", lessonData.Title)
 	fmt.Println("\nPress RETURN or SPACE to continue to typing practice. Press ESC to quit")
-
 
 	if err := keyboard.Open(); err != nil {
 		panic(err)
@@ -49,5 +46,3 @@ import (
 	}
 
 }
-
-

@@ -91,9 +91,13 @@ func handleTypingInput(sentence string, inputWords string) (string, bool) {
 
 // calculateTypingSpeed calculates and prints typing speed.
 func displayTypingSpeed(startTime time.Time, inputWords string, lessonTitle string) {
+
 	endTime := time.Now()
 	duration := endTime.Sub(startTime)
 	typingSpeed := typingSpeed.CalculateTypingSpeed(inputWords, duration)
 	fmt.Printf("\n\nCongratulations! You have completed lesson %s\nYour typing speed is: %.2f WPM\n", lessonTitle, typingSpeed)
-	database.CompleteLesson(lessonTitle)
+	var lesson models.LessonDTO 
+	lesson.Speed = fmt.Sprintf("%.2f WPM", typingSpeed)
+	lesson.Title = lessonTitle
+	database.CompleteLesson(lesson)
 }

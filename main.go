@@ -21,16 +21,23 @@ func main() {
 		if err != nil {
 			return err
 		}
+
 		// Check if the path is a file and not a directory
 		if !info.IsDir() {
+			// Extract the filename without extension from the path
+			fileNameWithoutExt := strings.TrimSuffix(info.Name(), filepath.Ext(info.Name()))
+
+			lessons := database.ReadCompletedLesson()
+
+			// Check if the lesson title exists in the lessons slice
+			if lessonExists(fileNameWithoutExt, lessons) {
+				return nil
+			}
 			// Read the contents of the file into a string slice
 			fileContent, err := readLinesFromFile(path)
 			if err != nil {
 				return err
 			}
-
-			// Extract the filename without extension from the path
-			fileNameWithoutExt := strings.TrimSuffix(info.Name(), filepath.Ext(info.Name()))
 
 			// Create a map with the filename as the title and the list of sentences as its value
 			lessonData := models.Lesson{
@@ -49,6 +56,16 @@ func main() {
 		fmt.Printf("Error: %v\n", err)
 		return
 	}
+}
+
+// compare if lesson exists
+func lessonExists(lessonTitle string, lessons []models.LessonDTO) bool {
+	for _, lesson := range lessons {
+		if lesson.Title == lessonTitle {
+			return true
+		}
+	}
+	return false
 }
 
 // readLinesFromFile reads the lines from a file and returns them as a string slice.
