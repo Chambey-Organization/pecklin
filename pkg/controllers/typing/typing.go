@@ -44,8 +44,6 @@ func TypingPractice(lessonData *models.Lesson) {
 	// if user didn't exit calculate typing speed
 	if !exitPractice {
 		displayTypingSpeed(startTime, inputWords, lessonData.Title)
-		
-
 	}
 }
 
@@ -63,7 +61,7 @@ func handleTypingInput(sentence string, inputWords string) (string, bool) {
 		if key == keyboard.KeyEnter {
 			break
 		} else if key == keyboard.KeyEsc {
-			fmt.Printf("\n\nExiting lesson  ...\n", )
+			fmt.Printf("\n\nExiting lesson  ...\n")
 			return inputWords, true
 		} else if key == keyboard.KeySpace {
 			inputWords += " "
@@ -89,14 +87,13 @@ func handleTypingInput(sentence string, inputWords string) (string, bool) {
 	return inputWords, false
 }
 
-// calculateTypingSpeed calculates and prints typing speed.
 func displayTypingSpeed(startTime time.Time, inputWords string, lessonTitle string) {
 
 	endTime := time.Now()
 	duration := endTime.Sub(startTime)
 	typingSpeed := typingSpeed.CalculateTypingSpeed(inputWords, duration)
 	fmt.Printf("\n\nCongratulations! You have completed lesson %s\nYour typing speed is: %.2f WPM\n", lessonTitle, typingSpeed)
-	var lesson models.LessonDTO 
+	var lesson models.LessonDTO
 	lesson.Speed = fmt.Sprintf("%.2f WPM", typingSpeed)
 	lesson.Title = lessonTitle
 	database.CompleteLesson(lesson)
