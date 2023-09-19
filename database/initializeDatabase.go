@@ -16,7 +16,8 @@ func InitializeDatabase() {
         CREATE TABLE IF NOT EXISTS lessons (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             lesson TEXT UNIQUE,
-            speed TEXT
+            currentSpeed DOUBLE,
+            bestSpeed DOUBLE DEFAULT 0.0
         )
     `)
 	if err != nil {

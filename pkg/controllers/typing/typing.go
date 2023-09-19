@@ -91,10 +91,11 @@ func displayTypingSpeed(startTime time.Time, inputWords string, lessonTitle stri
 
 	endTime := time.Now()
 	duration := endTime.Sub(startTime)
-	typingSpeed := typingSpeed.CalculateTypingSpeed(inputWords, duration)
-	fmt.Printf("\n\nCongratulations! You have completed lesson %s\nYour typing speed is: %.2f WPM\n", lessonTitle, typingSpeed)
+	currentTypingSpeed := typingSpeed.CalculateTypingSpeed(inputWords, duration)
+	fmt.Printf("\n\nCongratulations! You have completed lesson %s\nYour typing speed is: %.2f WPM\n", lessonTitle, currentTypingSpeed)
 	var lesson models.LessonDTO
-	lesson.Speed = fmt.Sprintf("%.2f WPM", typingSpeed)
+	lesson.CurrentSpeed = currentTypingSpeed
+	lesson.BestSpeed = currentTypingSpeed
 	lesson.Title = lessonTitle
 	database.CompleteLesson(lesson)
 }

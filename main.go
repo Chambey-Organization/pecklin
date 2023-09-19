@@ -16,7 +16,6 @@ import (
 func main() {
 	database.InitializeDatabase()
 	root := "lessons"
-
 	var exitErr error
 
 	err := filepath.Walk(root, func(path string, info os.FileInfo, err error) error {
