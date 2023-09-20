@@ -1,27 +1,20 @@
 package database
 
 import (
-	"database/sql"
+	"github.com/jinzhu/gorm"
 	_ "github.com/mattn/go-sqlite3"
+	"main.go/pkg/models"
 )
 
-func InitializeDatabase() {
-	db, err := sql.Open("sqlite3", "pecklin.db")
-	if err != nil {
-		panic(err)
-	}
-	defer db.Close()
+var DB *gorm.DB
 
-	_, err = db.Exec(`
-        CREATE TABLE IF NOT EXISTS lessons (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            lesson TEXT UNIQUE,
-            currentSpeed DOUBLE,
-            bestSpeed DOUBLE DEFAULT 0.0
-        )
-    `)
+func InitializeDatabase() {
+	var err error
+	DB, err = gorm.Open("sqlite3", "pecklin.db")
 	if err != nil {
-		panic(err)
+		panic("Failed to connect to database")
 	}
-	db.Close()
+
+	// Create the "lessons" table if it does not exist
+	DB.AutoMigrate(&models.Lesson{})
 }

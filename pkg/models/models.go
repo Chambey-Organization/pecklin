@@ -1,12 +1,14 @@
 package models
 
-type Lesson struct {
-	Title   string
-	Content []string
-}
+import (
+	"github.com/jinzhu/gorm"
+)
 
-type LessonDTO struct {
-	Title        string  `json:"title"`
-	CurrentSpeed float64 `json:"currentSpeed"`
-	BestSpeed    float64 `json:"bestSpeed"`
+type Lesson struct {
+	gorm.Model
+	Title        string
+	Content      []string `gorm:"-"`
+	CurrentSpeed float64
+	BestSpeed    float64
+	Complete     bool
 }

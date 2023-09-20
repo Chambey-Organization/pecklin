@@ -10,7 +10,7 @@ import (
 )
 
 func WelcomeScreen(lessonData *models.Lesson, hasExitedLesson *bool) {
-	//clear.ClearScreen()
+	clear.ClearScreen()
 	fmt.Printf("Welcome to lesson %s\n", lessonData.Title)
 	fmt.Println("\nPress RETURN or SPACE to continue to typing practice. Press ESC to quit")
 

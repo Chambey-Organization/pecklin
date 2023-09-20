@@ -2,23 +2,71 @@ package main
 
 import (
 	"bufio"
-	"errors"
+	"fmt"
+	"github.com/eiannone/keyboard"
+	"main.go/database"
+	"main.go/pkg/controllers/welcome"
+	"main.go/pkg/models"
+	"main.go/pkg/utils/clear"
 	"os"
 	"path/filepath"
 	"strings"
 	"time"
-
-	"main.go/database"
-	"main.go/pkg/controllers/welcome"
-	"main.go/pkg/models"
 )
 
 func main() {
 	database.InitializeDatabase()
-	root := "lessons"
-	var exitErr error
+	//var exitErr error
+	lessons := database.ReadCompletedLesson()
 
-	err := filepath.Walk(root, func(path string, info os.FileInfo, err error) error {
+	err := ReadIncompleteLessons(lessons)
+
+	clear.ClearScreen()
+	fmt.Println("\n Congratulations! You have completed all the lessons \n \nPress RETURN or SPACE to redo the typing practice. Press ESC to quit")
+	if err := keyboard.Open(); err != nil {
+		panic(err)
+	}
+	defer func() {
+		_ = keyboard.Close()
+	}()
+
+	for {
+		_, key, err := keyboard.GetKey()
+		if err != nil {
+			break
+		}
+
+		if key == keyboard.KeySpace || key == keyboard.KeyEnter {
+			err := keyboard.Close()
+			if err != nil {
+				break
+			}
+			database.RedoLessons()
+			lessons = database.ReadCompletedLesson()
+
+			err = ReadIncompleteLessons(lessons)
+			if err != nil {
+				return
+			}
+		}
+
+		if key == keyboard.KeyEsc {
+			break
+		}
+	}
+	//if exitErr != nil {
+	//	return
+	//}
+	//
+	if err != nil {
+		return
+	}
+}
+
+func ReadIncompleteLessons(lessons []models.Lesson) error {
+	root := "lessons"
+
+	return filepath.Walk(root, func(path string, info os.FileInfo, err error) error {
 		if err != nil {
 			return err
 		}
@@ -29,8 +77,6 @@ func main() {
 		if !info.IsDir() {
 			// Extract the filename without extension from the path
 			fileNameWithoutExt := strings.TrimSuffix(info.Name(), filepath.Ext(info.Name()))
-
-			lessons := database.ReadCompletedLesson()
 
 			// Check if the lesson title exists in the lessons slice
 			if lessonComplete(fileNameWithoutExt, lessons) {
@@ -51,27 +97,19 @@ func main() {
 			// Pass the map to the WelcomeScreen function
 			welcome.WelcomeScreen(&lessonData, &hasExitedLesson)
 
-			//check if user exited the lesson
-			if hasExitedLesson {
-				exitErr = errors.New("user exited the lesson")
-				return exitErr
-			}
+			////check if user exited the lesson
+			//if hasExitedLesson {
+			//	exitErr = errors.New("user exited the lesson")
+			//	return exitErr
+			//}
 			time.Sleep(3 * time.Second)
 		}
 		return nil
 	})
-
-	if exitErr != nil {
-		return
-	}
-
-	if err != nil {
-		return
-	}
 }
 
-// compare if lesson exists
-func lessonComplete(lessonTitle string, lessons []models.LessonDTO) bool {
+// compare if lesson is complete
+func lessonComplete(lessonTitle string, lessons []models.Lesson) bool {
 	for _, lesson := range lessons {
 		if lesson.Title == lessonTitle {
 			return true
