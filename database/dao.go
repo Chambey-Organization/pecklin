@@ -38,6 +38,12 @@ func ReadCompletedLesson() []models.Lesson {
 
 	return lessons
 }
+func ReadAllLessons() []models.Lesson {
+	var lessons []models.Lesson
+	DB.Find(&lessons)
+
+	return lessons
+}
 
 func ReadALessonData(searchLesson models.Lesson) models.Lesson {
 	var lesson models.Lesson

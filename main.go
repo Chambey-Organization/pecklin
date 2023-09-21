@@ -19,13 +19,14 @@ func main() {
 	database.InitializeDatabase()
 	var exitErr bool
 	lessons := database.ReadCompletedLesson()
+	allLessons := database.ReadAllLessons()
 
-	err := ReadIncompleteLessons(lessons, &exitErr)
+	err := ReadIncompleteLessons(lessons, allLessons, &exitErr)
 	if exitErr {
 		return
 	}
 	clear.ClearScreen()
-	fmt.Println("\n Congratulations! You have completed all the lessons \n \nPress RETURN or SPACE to redo the typing practice. Press ESC to quit")
+	fmt.Println("\n Congratulations! You have completed all the lessons \n \nPress RETURN to redo the typing practice, SPACE to view lesson stats and ESC to quit")
 	if err := keyboard.Open(); err != nil {
 		panic(err)
 	}
@@ -39,7 +40,7 @@ func main() {
 			break
 		}
 
-		if key == keyboard.KeySpace || key == keyboard.KeyEnter {
+		if key == keyboard.KeyEnter {
 			err := keyboard.Close()
 			if err != nil {
 				break
@@ -47,7 +48,7 @@ func main() {
 			database.RedoLessons()
 			lessons = database.ReadCompletedLesson()
 
-			err = ReadIncompleteLessons(lessons, &exitErr)
+			err = ReadIncompleteLessons(lessons, allLessons, &exitErr)
 			if exitErr {
 				return
 			}
@@ -56,6 +57,13 @@ func main() {
 			}
 		}
 
+		if key == keyboard.KeySpace {
+			for _, lesson := range allLessons {
+				fmt.Printf("\nLesson Title: %s\n", lesson.Title)
+				fmt.Printf("Typing Speed: %.2f WPM\n", lesson.BestSpeed)
+				fmt.Println("---------------------------------")
+			}
+		}
 		if key == keyboard.KeyEsc {
 			break
 		}
@@ -66,7 +74,7 @@ func main() {
 	}
 }
 
-func ReadIncompleteLessons(lessons []models.Lesson, exitErr *bool) error {
+func ReadIncompleteLessons(lessons []models.Lesson, allLessons []models.Lesson, exitErr *bool) error {
 	root := "lessons"
 
 	return filepath.Walk(root, func(path string, info os.FileInfo, err error) error {
