@@ -97,5 +97,6 @@ func displayTypingSpeed(startTime time.Time, inputWords string, lessonTitle stri
 	lesson.CurrentSpeed = currentTypingSpeed
 	lesson.BestSpeed = currentTypingSpeed
 	lesson.Title = lessonTitle
+	lesson.Complete = true
 	database.CompleteLesson(lesson)
 }
