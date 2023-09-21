@@ -14,8 +14,7 @@ const (
 	delay = 1 * time.Second
 )
 
-// TypingPractice starts a typing practice session for a given lesson.
-func TypingPractice(lessonData *models.Lesson) {
+func TypingPractice(lessonData *models.Lesson, hasExitedLesson *bool) {
 	fmt.Println("Try this:")
 	time.Sleep(delay)
 
@@ -36,12 +35,12 @@ func TypingPractice(lessonData *models.Lesson) {
 
 		inputWords, exitPractice = handleTypingInput(sentence, inputWords)
 
-		if exitPractice { // Check if Esc key was pressed
-			break // Exit the loop if Esc was pressed
+		if exitPractice {
+			*hasExitedLesson = true
+			break
 		}
 	}
 
-	// if user didn't exit calculate typing speed
 	if !exitPractice {
 		displayTypingSpeed(startTime, inputWords, lessonData.Title)
 	}
@@ -61,7 +60,7 @@ func handleTypingInput(sentence string, inputWords string) (string, bool) {
 		if key == keyboard.KeyEnter {
 			break
 		} else if key == keyboard.KeyEsc {
-			fmt.Printf("\n\nExiting lesson  ...\n")
+			fmt.Printf("\n\nExiting lesson ...\n")
 			return inputWords, true
 		} else if key == keyboard.KeySpace {
 			inputWords += " "

@@ -33,8 +33,7 @@ func WelcomeScreen(lessonData *models.Lesson, hasExitedLesson *bool) {
 				break
 			}
 			clear.ClearScreen()
-			typing.TypingPractice(lessonData)
-
+			typing.TypingPractice(lessonData, hasExitedLesson)
 		}
 
 		if key == keyboard.KeyEsc {

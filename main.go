@@ -2,6 +2,7 @@ package main
 
 import (
 	"bufio"
+	"errors"
 	"fmt"
 	"github.com/eiannone/keyboard"
 	"main.go/database"
@@ -16,11 +17,13 @@ import (
 
 func main() {
 	database.InitializeDatabase()
-	//var exitErr error
+	var exitErr bool
 	lessons := database.ReadCompletedLesson()
 
-	err := ReadIncompleteLessons(lessons)
-
+	err := ReadIncompleteLessons(lessons, &exitErr)
+	if exitErr {
+		return
+	}
 	clear.ClearScreen()
 	fmt.Println("\n Congratulations! You have completed all the lessons \n \nPress RETURN or SPACE to redo the typing practice. Press ESC to quit")
 	if err := keyboard.Open(); err != nil {
@@ -44,7 +47,10 @@ func main() {
 			database.RedoLessons()
 			lessons = database.ReadCompletedLesson()
 
-			err = ReadIncompleteLessons(lessons)
+			err = ReadIncompleteLessons(lessons, &exitErr)
+			if exitErr {
+				return
+			}
 			if err != nil {
 				return
 			}
@@ -54,16 +60,13 @@ func main() {
 			break
 		}
 	}
-	//if exitErr != nil {
-	//	return
-	//}
-	//
+
 	if err != nil {
 		return
 	}
 }
 
-func ReadIncompleteLessons(lessons []models.Lesson) error {
+func ReadIncompleteLessons(lessons []models.Lesson, exitErr *bool) error {
 	root := "lessons"
 
 	return filepath.Walk(root, func(path string, info os.FileInfo, err error) error {
@@ -71,37 +74,31 @@ func ReadIncompleteLessons(lessons []models.Lesson) error {
 			return err
 		}
 
-		hasExitedLesson := false
+		var hasExitedLesson bool
 
-		// Check if the path is a file and not a directory
 		if !info.IsDir() {
-			// Extract the filename without extension from the path
 			fileNameWithoutExt := strings.TrimSuffix(info.Name(), filepath.Ext(info.Name()))
 
-			// Check if the lesson title exists in the lessons slice
 			if lessonComplete(fileNameWithoutExt, lessons) {
 				return nil
 			}
-			// Read the contents of the file into a string slice
 			fileContent, err := readLinesFromFile(path)
 			if err != nil {
 				return err
 			}
 
-			// Create a map with the filename as the title and the list of sentences as its value
 			lessonData := models.Lesson{
 				Title:   fileNameWithoutExt,
 				Content: fileContent,
 			}
 
-			// Pass the map to the WelcomeScreen function
 			welcome.WelcomeScreen(&lessonData, &hasExitedLesson)
 
-			////check if user exited the lesson
-			//if hasExitedLesson {
-			//	exitErr = errors.New("user exited the lesson")
-			//	return exitErr
-			//}
+			//check if user exited the lesson
+			if hasExitedLesson {
+				*exitErr = true
+				return errors.New("user exited the lesson")
+			}
 			time.Sleep(3 * time.Second)
 		}
 		return nil
