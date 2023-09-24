@@ -21,7 +21,7 @@ func main() {
 	lessons := database.ReadCompletedLesson()
 	allLessons := database.ReadAllLessons()
 
-	err := ReadIncompleteLessons(lessons, allLessons, &exitErr)
+	err := ReadTextLessons(lessons, allLessons, &exitErr)
 	if exitErr {
 		return
 	}
@@ -48,7 +48,7 @@ func main() {
 			database.RedoLessons()
 			lessons = database.ReadCompletedLesson()
 
-			err = ReadIncompleteLessons(lessons, allLessons, &exitErr)
+			err = ReadTextLessons(lessons, allLessons, &exitErr)
 			if exitErr {
 				return
 			}
@@ -74,7 +74,7 @@ func main() {
 	}
 }
 
-func ReadIncompleteLessons(lessons []models.Lesson, allLessons []models.Lesson, exitErr *bool) error {
+func ReadTextLessons(lessons []models.Lesson, allLessons []models.Lesson, exitErr *bool) error {
 	root := "lessons"
 
 	return filepath.Walk(root, func(path string, info os.FileInfo, err error) error {
@@ -106,14 +106,14 @@ func ReadIncompleteLessons(lessons []models.Lesson, allLessons []models.Lesson, 
 			if hasExitedLesson {
 				*exitErr = true
 				return errors.New("user exited the lesson")
+			} else {
+				time.Sleep(3 * time.Second)
 			}
-			time.Sleep(3 * time.Second)
 		}
 		return nil
 	})
 }
 
-// compare if lesson is complete
 func lessonComplete(lessonTitle string, lessons []models.Lesson) bool {
 	for _, lesson := range lessons {
 		if lesson.Title == lessonTitle {
@@ -123,7 +123,6 @@ func lessonComplete(lessonTitle string, lessons []models.Lesson) bool {
 	return false
 }
 
-// readLinesFromFile reads the lines from a file and returns them as a string slice.
 func readLinesFromFile(filePath string) ([]string, error) {
 	file, err := os.Open(filePath)
 	if err != nil {

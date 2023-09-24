@@ -9,9 +9,7 @@ func CompleteLesson(lesson models.Lesson) {
 	var existingLesson models.Lesson
 	DB.Where("title = ?", lesson.Title).First(&existingLesson)
 
-	// Check if the record exists
 	if existingLesson.ID != 0 {
-		// Update the existing record with new data
 		existingLesson.CurrentSpeed = lesson.CurrentSpeed
 
 		if lesson.CurrentSpeed > existingLesson.BestSpeed {
@@ -19,11 +17,8 @@ func CompleteLesson(lesson models.Lesson) {
 		}
 
 		existingLesson.Complete = lesson.Complete
-
-		// Save the updated record back to the database
 		DB.Save(&existingLesson)
 	} else {
-		// If the record doesn't exist, create a new one
 		DB.Create(&lesson)
 	}
 }
@@ -43,11 +38,4 @@ func ReadAllLessons() []models.Lesson {
 	DB.Find(&lessons)
 
 	return lessons
-}
-
-func ReadALessonData(searchLesson models.Lesson) models.Lesson {
-	var lesson models.Lesson
-	DB.Where("lesson = ?", searchLesson.Title).First(&lesson)
-
-	return lesson
 }

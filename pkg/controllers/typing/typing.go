@@ -49,6 +49,7 @@ func TypingPractice(lessonData *models.Lesson, hasExitedLesson *bool) {
 // handleTypingInput handles user input for a given sentence and returns updated inputWords and exitPractice flag.
 func handleTypingInput(sentence string, inputWords string) (string, bool) {
 	var inputCharacters []rune
+
 	sentenceCharacters := []rune(sentence)
 
 	for {
