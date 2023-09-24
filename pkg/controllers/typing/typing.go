@@ -14,8 +14,7 @@ const (
 	delay = 1 * time.Second
 )
 
-// TypingPractice starts a typing practice session for a given lesson.
-func TypingPractice(lessonData *models.Lesson) {
+func TypingPractice(lessonData *models.Lesson, hasExitedLesson *bool) {
 	fmt.Println("Try this:")
 	time.Sleep(delay)
 
@@ -36,12 +35,12 @@ func TypingPractice(lessonData *models.Lesson) {
 
 		inputWords, exitPractice = handleTypingInput(sentence, inputWords)
 
-		if exitPractice { // Check if Esc key was pressed
-			break // Exit the loop if Esc was pressed
+		if exitPractice {
+			*hasExitedLesson = true
+			break
 		}
 	}
 
-	// if user didn't exit calculate typing speed
 	if !exitPractice {
 		displayTypingSpeed(startTime, inputWords, lessonData.Title)
 	}
@@ -50,6 +49,7 @@ func TypingPractice(lessonData *models.Lesson) {
 // handleTypingInput handles user input for a given sentence and returns updated inputWords and exitPractice flag.
 func handleTypingInput(sentence string, inputWords string) (string, bool) {
 	var inputCharacters []rune
+
 	sentenceCharacters := []rune(sentence)
 
 	for {
@@ -61,7 +61,7 @@ func handleTypingInput(sentence string, inputWords string) (string, bool) {
 		if key == keyboard.KeyEnter {
 			break
 		} else if key == keyboard.KeyEsc {
-			fmt.Printf("\n\nExiting lesson  ...\n")
+			fmt.Printf("\n\nExiting lesson ...\n")
 			return inputWords, true
 		} else if key == keyboard.KeySpace {
 			inputWords += " "
@@ -91,10 +91,12 @@ func displayTypingSpeed(startTime time.Time, inputWords string, lessonTitle stri
 
 	endTime := time.Now()
 	duration := endTime.Sub(startTime)
-	typingSpeed := typingSpeed.CalculateTypingSpeed(inputWords, duration)
-	fmt.Printf("\n\nCongratulations! You have completed lesson %s\nYour typing speed is: %.2f WPM\n", lessonTitle, typingSpeed)
-	var lesson models.LessonDTO
-	lesson.Speed = fmt.Sprintf("%.2f WPM", typingSpeed)
+	currentTypingSpeed := typingSpeed.CalculateTypingSpeed(inputWords, duration)
+	fmt.Printf("\n\nCongratulations! You have completed lesson %s\nYour typing speed is: %.2f WPM\n", lessonTitle, currentTypingSpeed)
+	var lesson models.Lesson
+	lesson.CurrentSpeed = currentTypingSpeed
+	lesson.BestSpeed = currentTypingSpeed
 	lesson.Title = lessonTitle
+	lesson.Complete = true
 	database.CompleteLesson(lesson)
 }

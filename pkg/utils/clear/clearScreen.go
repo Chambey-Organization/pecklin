@@ -20,6 +20,11 @@ func init() {
 		cmd.Stdout = os.Stdout
 		cmd.Run()
 	}
+	clear["darwin"] = func() {
+		cmd := exec.Command("clear") // Darwin (macOS)
+		cmd.Stdout = os.Stdout
+		cmd.Run()
+	}
 }
 
 func ClearScreen() {
