@@ -12,7 +12,7 @@ func InitializeDatabase() {
 	var err error
 	DB, err = gorm.Open("sqlite3", "pecklin.db")
 	if err != nil {
-		panic("Failed to connect to database")
+		panic(err.Error())
 	}
 
 	// Create the "lessons" table if it does not exist

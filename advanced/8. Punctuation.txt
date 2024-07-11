@@ -1,0 +1,4 @@
+Hello, World!
+This is a test.
+Typing is fun.
+Keep practicing.
