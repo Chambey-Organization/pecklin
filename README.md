@@ -51,9 +51,10 @@ Before running Pecking, ensure you have the following installed on your system:
 ## Installation
 
 install gcc tools
-```bash
-sudo apt install gcc
 
+```bash 
+sudo apt install gcc
+```
 
 ### Clone the Repository (Optional)
 
@@ -61,13 +62,15 @@ If you haven't already cloned the repository, you can do so using the following 
 
 ```bash
 git clone https://github.com/Chambey-Organization/pecking
+```
 
 ```bash
 cd pecking
+```
 
 ```bash
 go run main.go
-
+```
 
 
 
