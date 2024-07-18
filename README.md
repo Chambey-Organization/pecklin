@@ -36,3 +36,38 @@ The Pecklin project is in its’ early stage of developing a minimum viable prod
 [Typing.io](https://typing.io/) - Typing Practice for Programmers
 
 [Charm](https://charm.sh/) - We build tools to make the command line glamorous.
+
+
+# Get started with Pecking
+
+## Prerequisites
+
+Before running Pecking, ensure you have the following installed on your system:
+
+- [Go](https://golang.org/doc/install) (latest version recommended)
+- Git (optional, for cloning the repository)
+- Install GCC tools
+
+## Installation
+
+install gcc tools
+```bash
+sudo apt install gcc
+
+
+### Clone the Repository (Optional)
+
+If you haven't already cloned the repository, you can do so using the following command:
+
+```bash
+git clone https://github.com/Chambey-Organization/pecking
+
+```bash
+cd pecking
+
+```bash
+go run main.go
+
+
+
+
