@@ -75,7 +75,7 @@ func main() {
 }
 
 func ReadTextLessons(lessons []models.Lesson, allLessons []models.Lesson, exitErr *bool) error {
-	root := "lessons"
+	root := "lessons/programming/go"
 
 	return filepath.Walk(root, func(path string, info os.FileInfo, err error) error {
 		if err != nil {
@@ -133,7 +133,10 @@ func readLinesFromFile(filePath string) ([]string, error) {
 	var lines []string
 	scanner := bufio.NewScanner(file)
 	for scanner.Scan() {
-		lines = append(lines, scanner.Text())
+		line := scanner.Text()
+		if strings.TrimSpace(line) != "" {
+			lines = append(lines, line)
+		}
 	}
 	if err := scanner.Err(); err != nil {
 		return nil, err

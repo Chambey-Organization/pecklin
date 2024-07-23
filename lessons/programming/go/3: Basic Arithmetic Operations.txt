@@ -1,0 +1,18 @@
+package main
+
+import "fmt"
+
+func main() {
+    var a int = 5
+    var b int = 3
+
+    var sum int = a + b
+    var diff int = a - b
+    var product int = a * b
+    var quotient int = a / b
+
+    fmt.Println("Sum:", sum)
+    fmt.Println("Difference:", diff)
+    fmt.Println("Product:", product)
+    fmt.Println("Quotient:", quotient)
+}
