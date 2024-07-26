@@ -11,10 +11,9 @@ import (
 	"time"
 )
 
-func ReadTextLessons(lessons []models.Lesson, exitErr *bool) error {
-	root := "lessons/programming/go"
+func ReadTextLessons(lessons []models.Lesson, exitErr *bool, lessonType string) error {
 
-	return filepath.Walk(root, func(path string, info os.FileInfo, err error) error {
+	return filepath.Walk(lessonType, func(path string, info os.FileInfo, err error) error {
 		if err != nil {
 			return err
 		}
