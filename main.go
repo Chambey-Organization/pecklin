@@ -48,6 +48,7 @@ func main() {
 		return
 	}
 	clear.ClearScreen()
+
 	fmt.Println("\n Congratulations! You have completed all the lessons \n \nPress RETURN to redo the typing practice, SPACE to view lesson stats and ESC to quit")
 
 	if err := keyboard.Open(); err != nil {
