@@ -11,10 +11,15 @@ import (
 	"log"
 	"main.go/pkg/controllers/typing"
 	"main.go/pkg/models"
+	"main.go/pkg/utils/clear"
 	"os"
 	"path/filepath"
 	"strings"
 	"time"
+)
+
+var (
+	hasExitedLesson bool = false
 )
 
 func ReadTextLessons(lessons []models.Lesson, exitErr *bool, lessonType string) error {
@@ -23,8 +28,6 @@ func ReadTextLessons(lessons []models.Lesson, exitErr *bool, lessonType string) 
 		if err != nil {
 			return err
 		}
-
-		var hasExitedLesson bool
 
 		if !info.IsDir() {
 			fileNameWithoutExt := strings.TrimSuffix(info.Name(), filepath.Ext(info.Name()))
@@ -42,17 +45,17 @@ func ReadTextLessons(lessons []models.Lesson, exitErr *bool, lessonType string) 
 				Content: fileContent,
 			}
 
-			p := tea.NewProgram(initialModel(lessonData))
+			if !hasExitedLesson {
+				clear.ClearScreen()
+				p := tea.NewProgram(initialModel(lessonData))
 
-			if _, err := p.Run(); err != nil {
-				log.Fatal(err)
-			}
-			//check if user exited the lesson
-			if hasExitedLesson {
-				*exitErr = true
-				return errors.New("user exited the lesson")
+				if _, err := p.Run(); err != nil {
+					log.Fatal(err)
+				}
 			} else {
-				time.Sleep(3 * time.Second)
+				*exitErr = true
+				time.Sleep(1 * time.Second)
+				return errors.New("user exited the lesson")
 			}
 		}
 		return nil
@@ -157,6 +160,7 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	case tea.KeyMsg:
 		switch msg.Type {
 		case tea.KeyCtrlC, tea.KeyEsc:
+			hasExitedLesson = true
 			fmt.Println(m.textarea.Value())
 			return m, tea.Quit
 		case tea.KeyEnter:
@@ -174,11 +178,12 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				m.messages = append(m.messages, m.questionStyle.Render("Prompt: ")+prompt)
 				m.lesson.Input = fmt.Sprintf(m.lesson.Input, prompt)
 				m.currentIndex++
+				m.viewport.SetContent(strings.Join(m.messages, "\n"))
 			} else {
 				m.messages = append(m.messages, m.senderStyle.Render(typing.DisplayTypingSpeed(startTime, m.lesson.Input, m.lesson.Title)))
+				m.viewport.SetContent(strings.Join(m.messages, "\n"))
+				return m, tea.Quit
 			}
-			m.viewport.SetContent(strings.Join(m.messages, "\n"))
-
 		}
 
 	case errMsg:

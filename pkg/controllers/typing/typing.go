@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"time"
 
-	"main.go/database"
 	"main.go/pkg/models"
 	"main.go/pkg/utils/typingSpeed"
 )
@@ -23,6 +22,6 @@ func DisplayTypingSpeed(startTime time.Time, inputWords string, lessonTitle stri
 	lesson.BestSpeed = currentTypingSpeed
 	lesson.Title = lessonTitle
 	lesson.Complete = true
-	database.CompleteLesson(lesson)
+	//database.CompleteLesson(lesson)
 	return fmt.Sprintf("\n\nCongratulations! You have completed lesson %s\nYour typing speed is: %.2f WPM\n", lessonTitle, currentTypingSpeed)
 }
