@@ -3,7 +3,7 @@ package database
 import (
 	"github.com/jinzhu/gorm"
 	_ "github.com/mattn/go-sqlite3"
-	"main.go/pkg/models"
+	"main.go/domain/models"
 )
 
 var DB *gorm.DB
@@ -15,6 +15,7 @@ func InitializeDatabase() {
 		panic(err.Error())
 	}
 
-	// Create the "lessons" table if it does not exist
 	DB.AutoMigrate(&models.Lesson{})
+	DB.AutoMigrate(&models.Practice{})
+	DB.AutoMigrate(&models.LessonContent{})
 }

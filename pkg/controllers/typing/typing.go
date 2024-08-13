@@ -2,9 +2,10 @@ package typing
 
 import (
 	"fmt"
+	"main.go/data/local/database"
+	"main.go/domain/models"
 	"time"
 
-	"main.go/pkg/models"
 	"main.go/pkg/utils/typingSpeed"
 )
 
@@ -17,11 +18,11 @@ func DisplayTypingSpeed(startTime time.Time, inputWords string, lessonTitle stri
 	duration := endTime.Sub(startTime)
 	currentTypingSpeed := typingSpeed.CalculateTypingSpeed(inputWords, duration)
 
-	var lesson models.Lesson
-	lesson.CurrentSpeed = currentTypingSpeed
-	lesson.BestSpeed = currentTypingSpeed
-	lesson.Title = lessonTitle
-	lesson.Complete = true
-	//database.CompleteLesson(lesson)
+	database.CompleteLesson(models.Lesson{
+		CurrentSpeed: currentTypingSpeed,
+		BestSpeed:    currentTypingSpeed,
+		Title:        lessonTitle,
+		Complete:     true,
+	})
 	return fmt.Sprintf("\n\nCongratulations! You have completed lesson %s\nYour typing speed is: %.2f WPM\n", lessonTitle, currentTypingSpeed)
 }

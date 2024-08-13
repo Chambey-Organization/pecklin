@@ -2,15 +2,13 @@ package typingEngine
 
 import (
 	"bufio"
-	"errors"
 	"fmt"
 	"github.com/charmbracelet/bubbles/textarea"
 	"github.com/charmbracelet/bubbles/viewport"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
-	"log"
+	"main.go/domain/models"
 	"main.go/pkg/controllers/typing"
-	"main.go/pkg/models"
 	"main.go/pkg/utils/clear"
 	"os"
 	"path/filepath"
@@ -19,11 +17,12 @@ import (
 )
 
 var (
-	hasExitedLesson bool = false
+	hasExitedLesson = false
+	delay           = 2 * time.Second
+	startTime       = time.Now()
 )
 
 func ReadTextLessons(lessons []models.Lesson, exitErr *bool, lessonType string) error {
-
 	return filepath.Walk(lessonType, func(path string, info os.FileInfo, err error) error {
 		if err != nil {
 			return err
@@ -35,14 +34,12 @@ func ReadTextLessons(lessons []models.Lesson, exitErr *bool, lessonType string) 
 			if lessonComplete(fileNameWithoutExt, lessons) {
 				return nil
 			}
-			fileContent, err := readLinesFromFile(path)
 			if err != nil {
 				return err
 			}
 
 			lessonData := models.Lesson{
-				Title:   fileNameWithoutExt,
-				Content: fileContent,
+				Title: fileNameWithoutExt,
 			}
 
 			if !hasExitedLesson {
@@ -50,12 +47,15 @@ func ReadTextLessons(lessons []models.Lesson, exitErr *bool, lessonType string) 
 				p := tea.NewProgram(initialModel(lessonData))
 
 				if _, err := p.Run(); err != nil {
-					log.Fatal(err)
+					fmt.Printf("exit eeerror is %s", err.Error())
+					time.Sleep(delay)
+					return err
 				}
+
 			} else {
 				*exitErr = true
-				time.Sleep(1 * time.Second)
-				return errors.New("user exited the lesson")
+				time.Sleep(delay)
+				return err
 			}
 		}
 		return nil
@@ -102,10 +102,12 @@ type model struct {
 	textarea      textarea.Model
 	senderStyle   lipgloss.Style
 	questionStyle lipgloss.Style
+	titleStyle    lipgloss.Style
 	err           error
 	lesson        *models.Lesson
 	prompts       []string
 	currentIndex  int
+	instructions  string
 }
 
 func initialModel(lesson models.Lesson) model {
@@ -118,15 +120,16 @@ func initialModel(lesson models.Lesson) model {
 	ta.SetWidth(100)
 	ta.SetHeight(1)
 
-	// Remove cursor line styling
 	ta.FocusedStyle.CursorLine = lipgloss.NewStyle()
 
 	ta.ShowLineNumbers = false
 
-	title := fmt.Sprintf("Welcome to lesson %s\nPress Enter to continue", lesson.Title)
+	title := fmt.Sprintf("Welcome to lesson %s", lesson.Title)
 
 	vp := viewport.New(100, 10)
-	vp.SetContent(title)
+	var titleStyle = lipgloss.NewStyle().Bold(true).Foreground(lipgloss.Color("#6361e4"))
+
+	vp.SetContent(titleStyle.Render(title))
 
 	ta.KeyMap.InsertNewline.SetEnabled(false)
 
@@ -134,12 +137,12 @@ func initialModel(lesson models.Lesson) model {
 		textarea:      ta,
 		messages:      []string{},
 		viewport:      vp,
-		senderStyle:   lipgloss.NewStyle().Foreground(lipgloss.Color("#00cc00")),
 		err:           nil,
 		lesson:        &lesson,
 		questionStyle: lipgloss.NewStyle().Foreground(lipgloss.Color("4")),
-		prompts:       lesson.Content,
+		titleStyle:    lipgloss.NewStyle().Foreground(lipgloss.Color("#6361e4")),
 		currentIndex:  0,
+		instructions:  "(Press Enter to continue, esc to exit)",
 	}
 }
 
@@ -164,14 +167,17 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			fmt.Println(m.textarea.Value())
 			return m, tea.Quit
 		case tea.KeyEnter:
+			m.instructions = "(Press esc to exit)"
+
 			answer := m.textarea.Value()
-			startTime := time.Now()
 
 			if len(answer) > 0 {
 				m.messages = append(m.messages, m.senderStyle.Render(fmt.Sprintf("Input: %s", answer)))
+			} else {
+				startTime = time.Now()
 			}
 			m.textarea.Reset()
-			m.viewport.GotoBottom()
+			m.viewport.GotoTop()
 
 			if m.currentIndex < len(m.prompts) {
 				prompt := m.prompts[m.currentIndex]
@@ -199,6 +205,6 @@ func (m model) View() string {
 		"%s\n\n%s\n\n%s",
 		m.viewport.View(),
 		m.textarea.View(),
-		"(esc to quit)",
+		m.instructions,
 	) + "\n"
 }
