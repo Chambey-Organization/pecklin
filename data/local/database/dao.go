@@ -1,7 +1,6 @@
 package database
 
 import (
-	"fmt"
 	_ "github.com/mattn/go-sqlite3"
 	"main.go/domain/models"
 )
@@ -49,24 +48,16 @@ func ReadPractices() []models.Practice {
 	return practices
 }
 
-func ReadAllLessons() []models.Lesson {
+func ReadPracticeLessons(practiceId uint) ([]models.Lesson, error) {
 	var lessons []models.Lesson
-	DB.Find(&lessons)
-
-	fmt.Println("------------------------ lessons ----------------------")
-	for _, lesson := range lessons {
-		fmt.Printf("ID: %d, practiceId: %d, Name: %s\n", lesson.ID, lesson.PracticeID, lesson.Title)
+	if err := DB.Preload("Content").Where("practice_id = ?", practiceId).Find(&lessons).Error; err != nil {
+		return nil, err
 	}
-	return lessons
+	return lessons, nil
 }
 
-func ReadAllLessonsContent() []models.LessonContent {
-	var lessons []models.LessonContent
-	DB.Find(&lessons)
-
-	fmt.Println("------------------------ lesson content ----------------------")
-	for _, lesson := range lessons {
-		fmt.Printf("ID: %d, LessonId: %d, Name: %s\n", lesson.ID, lesson.LessonID, lesson.Prompt)
-	}
-	return lessons
+func ReadAllLessonContent(lessonId uint) []models.LessonContent {
+	var content []models.LessonContent
+	DB.Where("", lessonId).Find(&content)
+	return content
 }

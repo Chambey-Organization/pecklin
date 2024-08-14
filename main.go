@@ -9,10 +9,11 @@ import (
 	"main.go/data/remote"
 	"main.go/pkg/utils/clear"
 	"main.go/typingEngine"
+	"strconv"
 )
 
 var (
-	lessonType string
+	practiceId string
 	exitErr    bool
 )
 
@@ -24,22 +25,19 @@ func main() {
 		return
 	}
 	practices := database.ReadPractices()
-	lessons := database.ReadCompletedLesson()
 
 	var options []huh.Option[string]
 	for _, practice := range practices {
 		optionText := fmt.Sprintf("%d. %s", practice.ID, practice.Title)
-		optionValue := fmt.Sprintf("lessons/practice/%d", practice.ID)
-		options = append(options, huh.NewOption(optionText, optionValue))
+		options = append(options, huh.NewOption(optionText, strconv.Itoa(int(practice.ID))))
 	}
-	//allLessons := database.ReadAllLessons()
 
 	form := huh.NewForm(
 		huh.NewGroup(
 			huh.NewSelect[string]().Title("Which typing practice do you want to practice today?").Options(
 				options...,
-			).Value(&lessonType).Validate(func(str string) error {
-				if lessonType == "" {
+			).Value(&practiceId).Validate(func(str string) error {
+				if practiceId == "" {
 					return errors.New("please select a lesson to continue")
 				}
 				return nil
@@ -47,27 +45,32 @@ func main() {
 		),
 	)
 
-	if !exitErr {
-		clear.ClearScreen()
-		err := form.Run()
-		if err != nil {
-			log.Fatal(err)
-		}
+	practice, err := strconv.ParseUint(practiceId, 10, 32)
 
-		err = typingEngine.ReadTextLessons(lessons, &exitErr, lessonType)
-		if err != nil {
-			return
-		}
-	} else {
-		clear.ClearScreen()
-		err := form.Run()
-		if err != nil {
-			log.Fatal(err)
-		}
+	clear.ClearScreen()
 
-		err = typingEngine.ReadTextLessons(lessons, &exitErr, lessonType)
-		if err != nil {
-			return
-		}
+	err = form.Run()
+
+	if err != nil {
+		log.Fatal(err)
 	}
+
+	err = typingEngine.ReadPracticeLessons(&exitErr, uint(practice))
+
+	if err == nil {
+		return
+	} else if err.Error() == "user exited the practice" {
+		clear.ClearScreen()
+
+		err = form.Run()
+
+		if err != nil {
+			log.Fatal(err)
+		}
+
+		err = typingEngine.ReadPracticeLessons(&exitErr, uint(practice))
+	} else {
+		fmt.Printf("exit error is %s", err.Error())
+	}
+
 }

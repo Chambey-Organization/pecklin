@@ -31,11 +31,5 @@ func FetchPractices() error {
 	}
 
 	database.InsertPractices(practices)
-	database.ReadPractices()
-	lessons := database.ReadAllLessons()
-	lessonContent := database.ReadAllLessonsContent()
-	fmt.Printf("Lessons size %d\n", len(lessons))
-	fmt.Printf("Lesson content size %d\n", len(lessonContent))
-
 	return nil
 }

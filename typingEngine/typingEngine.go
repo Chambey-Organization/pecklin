@@ -1,17 +1,16 @@
 package typingEngine
 
 import (
-	"bufio"
+	"errors"
 	"fmt"
 	"github.com/charmbracelet/bubbles/textarea"
 	"github.com/charmbracelet/bubbles/viewport"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
+	"main.go/data/local/database"
 	"main.go/domain/models"
 	"main.go/pkg/controllers/typing"
 	"main.go/pkg/utils/clear"
-	"os"
-	"path/filepath"
 	"strings"
 	"time"
 )
@@ -22,65 +21,29 @@ var (
 	startTime       = time.Now()
 )
 
-func ReadTextLessons(lessons []models.Lesson, exitErr *bool, lessonType string) error {
-	return filepath.Walk(lessonType, func(path string, info os.FileInfo, err error) error {
-		if err != nil {
-			return err
-		}
+func ReadPracticeLessons(exitErr *bool, practiceId uint) error {
+	practiceLessons, _ := database.ReadPracticeLessons(practiceId)
 
-		if !info.IsDir() {
-			fileNameWithoutExt := strings.TrimSuffix(info.Name(), filepath.Ext(info.Name()))
+	for _, lesson := range practiceLessons {
 
-			if lessonComplete(fileNameWithoutExt, lessons) {
-				return nil
-			}
-			if err != nil {
-				return err
-			}
+		if !hasExitedLesson {
+			clear.ClearScreen()
+			p := tea.NewProgram(initialModel(lesson))
 
-			lessonData := models.Lesson{
-				Title: fileNameWithoutExt,
-			}
-
-			if !hasExitedLesson {
-				clear.ClearScreen()
-				p := tea.NewProgram(initialModel(lessonData))
-
-				if _, err := p.Run(); err != nil {
-					fmt.Printf("exit eeerror is %s", err.Error())
-					time.Sleep(delay)
-					return err
-				}
-
-			} else {
-				*exitErr = true
+			if _, err := p.Run(); err != nil {
 				time.Sleep(delay)
 				return err
 			}
-		}
-		return nil
-	})
-}
 
-func readLinesFromFile(filePath string) ([]string, error) {
-	file, err := os.Open(filePath)
-	if err != nil {
-		return nil, err
-	}
-	defer file.Close()
+		} else {
+			*exitErr = true
+			time.Sleep(delay)
+			return errors.New("user exited the practice")
 
-	var lines []string
-	scanner := bufio.NewScanner(file)
-	for scanner.Scan() {
-		line := scanner.Text()
-		if strings.TrimSpace(line) != "" {
-			lines = append(lines, line)
 		}
 	}
-	if err := scanner.Err(); err != nil {
-		return nil, err
-	}
-	return lines, nil
+
+	return nil
 }
 
 func lessonComplete(lessonTitle string, lessons []models.Lesson) bool {
@@ -98,14 +61,14 @@ type (
 
 type model struct {
 	viewport      viewport.Model
-	messages      []string
+	input         []string
 	textarea      textarea.Model
 	senderStyle   lipgloss.Style
 	questionStyle lipgloss.Style
 	titleStyle    lipgloss.Style
 	err           error
 	lesson        *models.Lesson
-	prompts       []string
+	prompts       []models.LessonContent
 	currentIndex  int
 	instructions  string
 }
@@ -135,10 +98,11 @@ func initialModel(lesson models.Lesson) model {
 
 	return model{
 		textarea:      ta,
-		messages:      []string{},
+		input:         []string{},
 		viewport:      vp,
 		err:           nil,
 		lesson:        &lesson,
+		prompts:       lesson.Content,
 		questionStyle: lipgloss.NewStyle().Foreground(lipgloss.Color("4")),
 		titleStyle:    lipgloss.NewStyle().Foreground(lipgloss.Color("#6361e4")),
 		currentIndex:  0,
@@ -172,7 +136,7 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			answer := m.textarea.Value()
 
 			if len(answer) > 0 {
-				m.messages = append(m.messages, m.senderStyle.Render(fmt.Sprintf("Input: %s", answer)))
+				m.input = append(m.input, m.senderStyle.Render(fmt.Sprintf("Input: %s", answer)))
 			} else {
 				startTime = time.Now()
 			}
@@ -181,13 +145,13 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 			if m.currentIndex < len(m.prompts) {
 				prompt := m.prompts[m.currentIndex]
-				m.messages = append(m.messages, m.questionStyle.Render("Prompt: ")+prompt)
+				m.input = append(m.input, m.questionStyle.Render("Prompt: ")+prompt.Prompt)
 				m.lesson.Input = fmt.Sprintf(m.lesson.Input, prompt)
 				m.currentIndex++
-				m.viewport.SetContent(strings.Join(m.messages, "\n"))
+				m.viewport.SetContent(strings.Join(m.input, "\n"))
 			} else {
-				m.messages = append(m.messages, m.senderStyle.Render(typing.DisplayTypingSpeed(startTime, m.lesson.Input, m.lesson.Title)))
-				m.viewport.SetContent(strings.Join(m.messages, "\n"))
+				m.input = append(m.input, m.senderStyle.Render(typing.DisplayTypingSpeed(startTime, m.lesson.Input, m.lesson.Title)))
+				m.viewport.SetContent(strings.Join(m.input, "\n"))
 				return m, tea.Quit
 			}
 		}
