@@ -21,7 +21,7 @@ var (
 	startTime       = time.Now()
 )
 
-func ReadPracticeLessons(exitErr *bool, practiceId uint) error {
+func ReadPracticeLessons(practiceId uint) error {
 	practiceLessons, _ := database.ReadPracticeLessons(practiceId)
 
 	for _, lesson := range practiceLessons {
@@ -36,7 +36,6 @@ func ReadPracticeLessons(exitErr *bool, practiceId uint) error {
 			}
 
 		} else {
-			*exitErr = true
 			time.Sleep(delay)
 			return errors.New("user exited the practice")
 

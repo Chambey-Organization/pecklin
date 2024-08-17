@@ -3,27 +3,42 @@ package main
 import (
 	"errors"
 	"fmt"
+	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/huh"
 	"log"
 	"main.go/data/local/database"
 	"main.go/data/remote"
+	"main.go/pkg/controllers/loader"
 	"main.go/pkg/utils/clear"
 	"main.go/typingEngine"
+	"os"
 	"strconv"
 )
 
 var (
 	practiceId string
-	exitErr    bool
 )
 
 func main() {
-	database.InitializeDatabase()
-	err := remote.FetchPractices()
-	if err != nil {
-		log.Fatal(err.Error())
-		return
+	m := loader.InitialModel()
+	p := tea.NewProgram(m)
+
+	go func() {
+		database.InitializeDatabase()
+		err := remote.FetchPractices()
+		if err != nil {
+			p.Send(loader.ErrMsg(err))
+			return
+		}
+
+		p.Send(loader.DataLoadedMsg{})
+	}()
+
+	if _, err := p.Run(); err != nil {
+		fmt.Println(err)
+		os.Exit(1)
 	}
+
 	practices := database.ReadPractices()
 
 	var options []huh.Option[string]
@@ -55,22 +70,12 @@ func main() {
 		log.Fatal(err)
 	}
 
-	err = typingEngine.ReadPracticeLessons(&exitErr, uint(practice))
+	err = typingEngine.ReadPracticeLessons(uint(practice))
 
 	if err == nil {
 		return
-	} else if err.Error() == "user exited the practice" {
-		clear.ClearScreen()
-
-		err = form.Run()
-
-		if err != nil {
-			log.Fatal(err)
-		}
-
-		err = typingEngine.ReadPracticeLessons(&exitErr, uint(practice))
 	} else {
-		fmt.Printf("exit error is %s", err.Error())
+		fmt.Printf("Exited lessons with error  %s\n", err.Error())
 	}
 
 }

@@ -16,6 +16,7 @@ func InitializeDatabase() {
 	}
 
 	DB.AutoMigrate(&models.Lesson{})
+	DB.AutoMigrate(&models.Progress{})
 	DB.AutoMigrate(&models.Practice{})
 	DB.AutoMigrate(&models.LessonContent{})
 }
