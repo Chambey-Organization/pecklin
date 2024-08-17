@@ -25,7 +25,8 @@ jobs:
         run: GOOS=darwin GOARCH=amd64 go build -o myapp-darwin-amd64
 
       - name: Upload executable as artifact
-        uses: actions/upload-artifact@v3
+        id: uploadArtifact
+        uses: actions/upload-artifact@v1
         with:
-          name: myapp-darwin-amd64
+          name: macos
           path: myapp-darwin-amd64

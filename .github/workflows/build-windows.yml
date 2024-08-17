@@ -28,7 +28,8 @@ jobs:
           go build -o myapp-windows-amd64.exe
 
       - name: Upload executable as artifact
-        uses: actions/upload-artifact@v3
+        id: uploadArtifact
+        uses: actions/upload-artifact@v1
         with:
-          name: myapp-windows-amd64
+          name: windows
           path: myapp-windows-amd64.exe

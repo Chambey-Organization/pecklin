@@ -25,7 +25,8 @@ jobs:
         run: GOOS=linux GOARCH=amd64 go build -o myapp-linux-amd64
 
       - name: Upload executable as artifact
-        uses: actions/upload-artifact@v3
+        id: uploadArtifact
+        uses: actions/upload-artifact@v1
         with:
-          name: myapp-linux-amd64
+          name: linux
           path: myapp-linux-amd64
