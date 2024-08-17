@@ -5,21 +5,21 @@ import (
 	"main.go/domain/models"
 )
 
-func CompleteLesson(lesson models.Lesson) {
-	var existingLesson models.Lesson
-	DB.Where("title = ?", lesson.Title).First(&existingLesson)
+func CompleteLesson(progress models.Progress) {
+	var existingProgress models.Progress
+	DB.Where("lessons_id = ?", progress.Lesson.ID).First(&existingProgress)
 
-	if existingLesson.ID != 0 {
-		existingLesson.CurrentSpeed = lesson.CurrentSpeed
+	if existingProgress.Id != 0 {
+		existingProgress.CurrentSpeed = progress.CurrentSpeed
 
-		if lesson.CurrentSpeed > existingLesson.BestSpeed {
-			existingLesson.BestSpeed = lesson.CurrentSpeed
+		if progress.CurrentSpeed > existingProgress.BestSpeed {
+			existingProgress.BestSpeed = progress.CurrentSpeed
 		}
 
-		existingLesson.Complete = lesson.Complete
-		DB.Save(&existingLesson)
+		existingProgress.Complete = progress.Complete
+		DB.Save(&existingProgress)
 	} else {
-		DB.Create(&lesson)
+		DB.Create(progress)
 	}
 }
 
@@ -36,9 +36,7 @@ func ReadCompletedLesson() []models.Lesson {
 
 func InsertPractices(practices []models.Practice) {
 	for _, practice := range practices {
-		//var existingPractice models.Practice
 		DB.Save(&practice)
-		//DB.Where("id = ?", practice.ID).FirstOrCreate(&existingPractice, &practice)
 	}
 }
 
@@ -56,8 +54,8 @@ func ReadPracticeLessons(practiceId uint) ([]models.Lesson, error) {
 	return lessons, nil
 }
 
-func ReadAllLessonContent(lessonId uint) []models.LessonContent {
+func ReadLessonContent(lessonId uint) []models.LessonContent {
 	var content []models.LessonContent
-	DB.Where("", lessonId).Find(&content)
+	DB.Where("lesson_id", lessonId).Find(&content)
 	return content
 }

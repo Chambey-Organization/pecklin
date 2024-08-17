@@ -61,7 +61,6 @@ func main() {
 	)
 
 	practice, err := strconv.ParseUint(practiceId, 10, 32)
-
 	err = form.Run()
 
 	if err != nil {

@@ -15,10 +15,32 @@ import (
 	"time"
 )
 
+type (
+	errMsg error
+)
+
+type model struct {
+	viewport         viewport.Model
+	input            []string
+	textarea         textarea.Model
+	senderStyle      lipgloss.Style
+	questionStyle    lipgloss.Style
+	titleStyle       lipgloss.Style
+	err              error
+	lesson           *models.Lesson
+	prompts          []models.LessonContent
+	currentIndex     int
+	instructions     string
+	currentPrompt    string
+	hasStartedTyping bool
+}
+
 var (
-	hasExitedLesson = false
-	delay           = 3 * time.Second
-	startTime       = time.Now()
+	hasExitedLesson  = false
+	delay            = 5 * time.Second
+	startTime        = time.Now()
+	accuracy         float64
+	highlightedInput string
 )
 
 func ReadPracticeLessons(practiceId uint) error {
@@ -37,7 +59,7 @@ func ReadPracticeLessons(practiceId uint) error {
 				return err
 			}
 		} else {
-			time.Sleep(delay)
+			//time.Sleep(delay)
 			return errors.New("user exited the practice")
 
 		}
@@ -55,24 +77,6 @@ func lessonComplete(lessonTitle string, lessons []models.Lesson) bool {
 	return false
 }
 
-type (
-	errMsg error
-)
-
-type model struct {
-	viewport      viewport.Model
-	input         []string
-	textarea      textarea.Model
-	senderStyle   lipgloss.Style
-	questionStyle lipgloss.Style
-	titleStyle    lipgloss.Style
-	err           error
-	lesson        *models.Lesson
-	prompts       []models.LessonContent
-	currentIndex  int
-	instructions  string
-}
-
 func initialModel(lesson models.Lesson) model {
 	ta := textarea.New()
 	ta.Placeholder = "Type the prompt"
@@ -87,7 +91,7 @@ func initialModel(lesson models.Lesson) model {
 
 	ta.ShowLineNumbers = false
 
-	title := fmt.Sprintf("Welcome to lesson %s", lesson.Title)
+	title := fmt.Sprintf(" Welcome to lesson %s", lesson.Title)
 
 	vp := viewport.New(100, 10)
 	var titleStyle = lipgloss.NewStyle().Bold(true).Foreground(lipgloss.Color("#6361e4"))
@@ -97,22 +101,25 @@ func initialModel(lesson models.Lesson) model {
 	ta.KeyMap.InsertNewline.SetEnabled(false)
 
 	return model{
-		textarea:      ta,
-		input:         []string{},
-		viewport:      vp,
-		err:           nil,
-		lesson:        &lesson,
-		prompts:       lesson.Content,
-		questionStyle: lipgloss.NewStyle().Foreground(lipgloss.Color("4")),
-		titleStyle:    lipgloss.NewStyle().Foreground(lipgloss.Color("#6361e4")),
-		currentIndex:  0,
-		instructions:  "(Press Enter to continue, esc to exit)",
+		textarea:         ta,
+		input:            []string{},
+		viewport:         vp,
+		err:              nil,
+		lesson:           &lesson,
+		prompts:          lesson.Content,
+		senderStyle:      lipgloss.NewStyle().Foreground(lipgloss.Color("205")).Bold(true),
+		titleStyle:       lipgloss.NewStyle().Foreground(lipgloss.Color("#6361e4")),
+		currentIndex:     0,
+		currentPrompt:    "",
+		hasStartedTyping: false,
+		instructions:     " (Press Enter to continue, esc to exit)",
 	}
 }
 
 func (m model) Init() tea.Cmd {
 	return textarea.Blink
 }
+
 func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	var (
 		tiCmd tea.Cmd
@@ -130,31 +137,34 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			fmt.Println(m.textarea.Value())
 			return m, tea.Quit
 		case tea.KeyEnter:
-			m.instructions = "(Press esc to exit)"
+			m.instructions = " (Press esc to exit)"
+			input := m.textarea.Value()
 
-			answer := m.textarea.Value()
-
-			if len(answer) > 0 {
+			if len(input) > 0 {
 				prompt := m.prompts[m.currentIndex].Prompt
-				highlightedInput := compareAndHighlightInput(answer, prompt)
-				m.input = append(m.input, m.senderStyle.Render(fmt.Sprintf("Input: %s", highlightedInput)))
+				highlightedInput, accuracy = m.CompareAndHighlightInput(input, prompt)
+				m.input = append(m.input, m.senderStyle.Render(fmt.Sprintf(" Input: %s (%.2f%% correct)\n", highlightedInput, accuracy)))
 			} else {
 				startTime = time.Now()
 			}
+
 			m.textarea.Reset()
 			m.viewport.GotoTop()
 
-			prompt := m.prompts[m.currentIndex]
-			m.input = append(m.input, m.questionStyle.Render("Prompt: ")+prompt.Prompt)
-			m.lesson.Input = fmt.Sprintf(m.lesson.Input, prompt)
+			if m.hasStartedTyping {
+				m.currentIndex++
+			} else {
+				m.hasStartedTyping = true // Set flag to true after the first Enter
+			}
 
 			if m.currentIndex < len(m.prompts) {
-				m.currentIndex++
+				prompt := m.prompts[m.currentIndex]
+				m.input = append(m.input, m.titleStyle.Render(" Prompt: ")+prompt.Prompt)
+				m.lesson.Input = fmt.Sprintf(m.lesson.Input, prompt)
 				m.viewport.SetContent(strings.Join(m.input, "\n"))
 			} else {
-				m.input = append(m.input, m.senderStyle.Render(typing.DisplayTypingSpeed(startTime, m.lesson.Input, m.lesson.Title)))
+				m.input = append(m.input, m.senderStyle.Render(typing.DisplayTypingSpeed(startTime, m.lesson.Input, *m.lesson, accuracy)))
 				m.viewport.SetContent(strings.Join(m.input, "\n"))
-
 				return m, tea.Quit
 			}
 		}
@@ -175,26 +185,22 @@ func (m model) View() string {
 		m.instructions,
 	) + "\n"
 }
-func compareAndHighlightInput(input string, prompt string) string {
-
-	fmt.Printf("\n>input %s > prompt %s", input, prompt)
-	correctStyle := lipgloss.NewStyle().Foreground(lipgloss.Color("2"))
-	incorrectStyle := lipgloss.NewStyle().Foreground(lipgloss.Color("1"))
+func (m model) CompareAndHighlightInput(input string, prompt string) (string, float64) {
+	correctStyle := lipgloss.NewStyle().Foreground(lipgloss.Color("2"))   // Green for correct characters
+	incorrectStyle := lipgloss.NewStyle().Foreground(lipgloss.Color("1")) // Red for incorrect characters
 
 	var highlightedInput strings.Builder
+	correctCount := 0
 
-	inputLen := len(input)
-	promptLen := len(prompt)
-
-	for i := 0; i < inputLen; i++ {
-		if inputLen == promptLen {
-			if i < promptLen && input[i] == prompt[i] {
-				highlightedInput.WriteString(correctStyle.Render(string(input[i])))
-			} else {
-				highlightedInput.WriteString(incorrectStyle.Render(string(input[i])))
-			}
+	for i := 0; i < len(input) && i < len(prompt); i++ {
+		if input[i] == prompt[i] {
+			highlightedInput.WriteString(correctStyle.Render(string(input[i])))
+			correctCount++
+		} else {
+			highlightedInput.WriteString(incorrectStyle.Render(string(input[i])))
 		}
 	}
 
-	return highlightedInput.String()
+	accuracy := float64(correctCount) / float64(len(prompt)) * 100
+	return highlightedInput.String(), accuracy
 }
