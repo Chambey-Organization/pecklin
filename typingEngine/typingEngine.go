@@ -17,24 +17,25 @@ import (
 
 var (
 	hasExitedLesson = false
-	delay           = 2 * time.Second
+	delay           = 3 * time.Second
 	startTime       = time.Now()
 )
 
 func ReadPracticeLessons(practiceId uint) error {
 	practiceLessons, _ := database.ReadPracticeLessons(practiceId)
 
-	for _, lesson := range practiceLessons {
+	for index, lesson := range practiceLessons {
 
 		if !hasExitedLesson {
+			if index != 0 {
+				time.Sleep(delay)
+			}
 			clear.ClearScreen()
 			p := tea.NewProgram(initialModel(lesson))
 
 			if _, err := p.Run(); err != nil {
-				time.Sleep(delay)
 				return err
 			}
-
 		} else {
 			time.Sleep(delay)
 			return errors.New("user exited the practice")
@@ -112,7 +113,6 @@ func initialModel(lesson models.Lesson) model {
 func (m model) Init() tea.Cmd {
 	return textarea.Blink
 }
-
 func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	var (
 		tiCmd tea.Cmd
@@ -135,22 +135,26 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			answer := m.textarea.Value()
 
 			if len(answer) > 0 {
-				m.input = append(m.input, m.senderStyle.Render(fmt.Sprintf("Input: %s", answer)))
+				prompt := m.prompts[m.currentIndex].Prompt
+				highlightedInput := compareAndHighlightInput(answer, prompt)
+				m.input = append(m.input, m.senderStyle.Render(fmt.Sprintf("Input: %s", highlightedInput)))
 			} else {
 				startTime = time.Now()
 			}
 			m.textarea.Reset()
 			m.viewport.GotoTop()
 
+			prompt := m.prompts[m.currentIndex]
+			m.input = append(m.input, m.questionStyle.Render("Prompt: ")+prompt.Prompt)
+			m.lesson.Input = fmt.Sprintf(m.lesson.Input, prompt)
+
 			if m.currentIndex < len(m.prompts) {
-				prompt := m.prompts[m.currentIndex]
-				m.input = append(m.input, m.questionStyle.Render("Prompt: ")+prompt.Prompt)
-				m.lesson.Input = fmt.Sprintf(m.lesson.Input, prompt)
 				m.currentIndex++
 				m.viewport.SetContent(strings.Join(m.input, "\n"))
 			} else {
 				m.input = append(m.input, m.senderStyle.Render(typing.DisplayTypingSpeed(startTime, m.lesson.Input, m.lesson.Title)))
 				m.viewport.SetContent(strings.Join(m.input, "\n"))
+
 				return m, tea.Quit
 			}
 		}
@@ -170,4 +174,27 @@ func (m model) View() string {
 		m.textarea.View(),
 		m.instructions,
 	) + "\n"
+}
+func compareAndHighlightInput(input string, prompt string) string {
+
+	fmt.Printf("\n>input %s > prompt %s", input, prompt)
+	correctStyle := lipgloss.NewStyle().Foreground(lipgloss.Color("2"))
+	incorrectStyle := lipgloss.NewStyle().Foreground(lipgloss.Color("1"))
+
+	var highlightedInput strings.Builder
+
+	inputLen := len(input)
+	promptLen := len(prompt)
+
+	for i := 0; i < inputLen; i++ {
+		if inputLen == promptLen {
+			if i < promptLen && input[i] == prompt[i] {
+				highlightedInput.WriteString(correctStyle.Render(string(input[i])))
+			} else {
+				highlightedInput.WriteString(incorrectStyle.Render(string(input[i])))
+			}
+		}
+	}
+
+	return highlightedInput.String()
 }

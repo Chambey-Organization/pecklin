@@ -22,7 +22,6 @@ var (
 func main() {
 	m := loader.InitialModel()
 	p := tea.NewProgram(m)
-
 	go func() {
 		database.InitializeDatabase()
 		err := remote.FetchPractices()
@@ -32,6 +31,7 @@ func main() {
 		}
 
 		p.Send(loader.DataLoadedMsg{})
+		clear.ClearScreen()
 	}()
 
 	if _, err := p.Run(); err != nil {
@@ -61,8 +61,6 @@ func main() {
 	)
 
 	practice, err := strconv.ParseUint(practiceId, 10, 32)
-
-	clear.ClearScreen()
 
 	err = form.Run()
 
