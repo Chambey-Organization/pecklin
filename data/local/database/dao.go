@@ -5,9 +5,17 @@ import (
 	"main.go/domain/models"
 )
 
-func CompleteLesson(progress models.Progress) {
+func CompleteLesson(progress models.Progress) error {
+	/*result := DB.Save(&progress)
+
+	if result.Error != nil {
+		return result.Error
+	}
+
+	return nil */
+
 	var existingProgress models.Progress
-	DB.Where("lessons_id = ?", progress.Lesson.ID).First(&existingProgress)
+	DB.Where("lesson_id = ?", progress.LessonID).First(&existingProgress)
 
 	if existingProgress.Id != 0 {
 		existingProgress.CurrentSpeed = progress.CurrentSpeed
@@ -17,10 +25,17 @@ func CompleteLesson(progress models.Progress) {
 		}
 
 		existingProgress.Complete = progress.Complete
-		DB.Save(&existingProgress)
+		result := DB.Save(&existingProgress)
+		if result.Error != nil {
+			return result.Error
+		}
 	} else {
-		DB.Create(progress)
+		result := DB.Create(progress)
+		if result.Error != nil {
+			return result.Error
+		}
 	}
+	return nil
 }
 
 func RedoLessons() {

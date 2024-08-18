@@ -10,7 +10,7 @@ import (
 	"main.go/data/local/database"
 	"main.go/domain/models"
 	"main.go/pkg/controllers/typing"
-	"main.go/pkg/utils/clear"
+	//"main.go/pkg/utils/clear"
 	"strings"
 	"time"
 )
@@ -44,22 +44,21 @@ var (
 )
 
 func ReadPracticeLessons(practiceId uint) error {
+
 	practiceLessons, _ := database.ReadPracticeLessons(practiceId)
 
 	for index, lesson := range practiceLessons {
-
 		if !hasExitedLesson {
 			if index != 0 {
 				time.Sleep(delay)
 			}
-			clear.ClearScreen()
+			//clear.ClearScreen()
 			p := tea.NewProgram(initialModel(lesson))
 
 			if _, err := p.Run(); err != nil {
 				return err
 			}
 		} else {
-			//time.Sleep(delay)
 			return errors.New("user exited the practice")
 
 		}
@@ -163,7 +162,7 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				m.lesson.Input = fmt.Sprintf(m.lesson.Input, prompt)
 				m.viewport.SetContent(strings.Join(m.input, "\n"))
 			} else {
-				m.input = append(m.input, m.senderStyle.Render(typing.DisplayTypingSpeed(startTime, m.lesson.Input, *m.lesson, accuracy)))
+				m.input = append(m.input, m.senderStyle.Render(typing.DisplayTypingSpeed(startTime, m.lesson.Input, m.lesson, accuracy)))
 				m.viewport.SetContent(strings.Join(m.input, "\n"))
 				return m, tea.Quit
 			}

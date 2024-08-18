@@ -20,10 +20,12 @@ var (
 )
 
 func main() {
+	database.InitializeDatabase()
+
 	m := loader.InitialModel()
 	p := tea.NewProgram(m)
 	go func() {
-		database.InitializeDatabase()
+
 		err := remote.FetchPractices()
 		if err != nil {
 			p.Send(loader.ErrMsg(err))
