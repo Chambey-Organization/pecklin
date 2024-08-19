@@ -5,15 +5,7 @@ import (
 	"main.go/domain/models"
 )
 
-func CompleteLesson(progress models.Progress) error {
-	/*result := DB.Save(&progress)
-
-	if result.Error != nil {
-		return result.Error
-	}
-
-	return nil */
-
+func CompleteLesson(progress *models.Progress) error {
 	var existingProgress models.Progress
 	DB.Where("lesson_id = ?", progress.LessonID).First(&existingProgress)
 

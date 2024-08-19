@@ -67,15 +67,6 @@ func ReadPracticeLessons(practiceId uint) error {
 	return nil
 }
 
-func lessonComplete(lessonTitle string, lessons []models.Lesson) bool {
-	for _, lesson := range lessons {
-		if lesson.Title == lessonTitle {
-			return true
-		}
-	}
-	return false
-}
-
 func initialModel(lesson models.Lesson) model {
 	ta := textarea.New()
 	ta.Placeholder = "Type the prompt"
