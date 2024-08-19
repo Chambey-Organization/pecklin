@@ -4,15 +4,14 @@ import (
 	"fmt"
 	"main.go/data/local/database"
 	"main.go/domain/models"
+	"main.go/pkg/utils"
 	"time"
-
-	"main.go/pkg/utils/typingSpeed"
 )
 
 func DisplayTypingSpeed(startTime time.Time, inputWords string, lesson *models.Lesson, accuracy float64) string {
 	endTime := time.Now()
 	duration := endTime.Sub(startTime)
-	currentTypingSpeed := typingSpeed.CalculateTypingSpeed(inputWords, duration)
+	currentTypingSpeed := utils.CalculateTypingSpeed(inputWords, duration)
 
 	progress := models.Progress{
 		CurrentSpeed: currentTypingSpeed,

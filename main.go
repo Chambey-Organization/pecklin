@@ -9,7 +9,7 @@ import (
 	"main.go/data/local/database"
 	"main.go/data/remote"
 	"main.go/pkg/controllers/loader"
-	"main.go/pkg/utils/clear"
+	"main.go/pkg/utils"
 	"main.go/typingEngine"
 	"os"
 	"strconv"
@@ -33,7 +33,7 @@ func main() {
 		}
 
 		p.Send(loader.DataLoadedMsg{})
-		clear.ClearScreen()
+		utils.ClearScreen()
 	}()
 
 	if _, err := p.Run(); err != nil {
@@ -55,20 +55,21 @@ func main() {
 				options...,
 			).Value(&practiceId).Validate(func(str string) error {
 				if practiceId == "" {
-					return errors.New("please select a lesson to continue")
+					err := fmt.Sprintf("Please select a lesson to continue")
+					return errors.New(err)
 				}
 				return nil
 			}),
 		),
 	)
 
-	practice, err := strconv.ParseUint(practiceId, 10, 32)
-	err = form.Run()
-
+	err := form.Run()
 	if err != nil {
 		log.Fatal(err)
 	}
 
+	practice, err := strconv.ParseUint(practiceId, 10, 32)
+	
 	err = typingEngine.ReadPracticeLessons(uint(practice))
 
 	if err == nil {

@@ -1,4 +1,4 @@
-package clear
+package utils
 
 import (
 	"os"

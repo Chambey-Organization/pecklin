@@ -10,7 +10,7 @@ import (
 	"main.go/data/local/database"
 	"main.go/domain/models"
 	"main.go/pkg/controllers/typing"
-	//"main.go/pkg/utils/clear"
+	"main.go/pkg/utils"
 	"strings"
 	"time"
 )
@@ -52,7 +52,7 @@ func ReadPracticeLessons(practiceId uint) error {
 			if index != 0 {
 				time.Sleep(delay)
 			}
-			//clear.ClearScreen()
+			utils.ClearScreen()
 			p := tea.NewProgram(initialModel(lesson))
 
 			if _, err := p.Run(); err != nil {
@@ -81,7 +81,7 @@ func initialModel(lesson models.Lesson) model {
 	ta.Placeholder = "Type the prompt"
 	ta.Focus()
 
-	ta.Prompt = "> "
+	ta.Prompt = " > "
 
 	ta.SetWidth(100)
 	ta.SetHeight(1)
@@ -141,7 +141,7 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 			if len(input) > 0 {
 				prompt := m.prompts[m.currentIndex].Prompt
-				highlightedInput, accuracy = m.CompareAndHighlightInput(input, prompt)
+				highlightedInput, accuracy = CompareAndHighlightInput(input, prompt)
 				m.input = append(m.input, m.senderStyle.Render(fmt.Sprintf(" Input: %s (%.2f%% correct)\n", highlightedInput, accuracy)))
 			} else {
 				startTime = time.Now()
@@ -184,7 +184,7 @@ func (m model) View() string {
 		m.instructions,
 	) + "\n"
 }
-func (m model) CompareAndHighlightInput(input string, prompt string) (string, float64) {
+func CompareAndHighlightInput(input string, prompt string) (string, float64) {
 	correctStyle := lipgloss.NewStyle().Foreground(lipgloss.Color("2"))   // Green for correct characters
 	incorrectStyle := lipgloss.NewStyle().Foreground(lipgloss.Color("1")) // Red for incorrect characters
 

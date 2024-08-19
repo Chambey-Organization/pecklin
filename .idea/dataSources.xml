@@ -21,7 +21,7 @@
       </jdbc-additional-properties>
       <working-dir>$ProjectFileDir$</working-dir>
     </data-source>
-    <data-source source="LOCAL" name="pecklin.db" uuid="78ef6832-a813-4e00-b685-3e58c9c4a0a8">
+    <data-source source="LOCAL" name="pecklin.db" uuid="c0399cff-736f-4080-b2b5-c807bf3d6ed9">
       <driver-ref>sqlite.xerial</driver-ref>
       <synchronize>true</synchronize>
       <jdbc-driver>org.sqlite.JDBC</jdbc-driver>
