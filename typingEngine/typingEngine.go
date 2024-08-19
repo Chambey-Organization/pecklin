@@ -31,7 +31,7 @@ type model struct {
 	prompts          []models.LessonContent
 	currentIndex     int
 	instructions     string
-	currentPrompt    string
+	totalAccuracy    float64
 	hasStartedTyping bool
 }
 
@@ -95,12 +95,12 @@ func initialModel(lesson models.Lesson) model {
 		input:            []string{},
 		viewport:         vp,
 		err:              nil,
+		totalAccuracy:    0,
 		lesson:           &lesson,
 		prompts:          lesson.Content,
 		senderStyle:      lipgloss.NewStyle().Foreground(lipgloss.Color("205")).Bold(true),
 		titleStyle:       lipgloss.NewStyle().Foreground(lipgloss.Color("#6361e4")),
 		currentIndex:     0,
-		currentPrompt:    "",
 		hasStartedTyping: false,
 		instructions:     " (Press Enter to continue, esc to exit)",
 	}
@@ -134,6 +134,7 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				prompt := m.prompts[m.currentIndex].Prompt
 				highlightedInput, accuracy = CompareAndHighlightInput(input, prompt)
 				m.input = append(m.input, m.senderStyle.Render(fmt.Sprintf(" Input: %s (%.2f%% correct)\n", highlightedInput, accuracy)))
+				m.totalAccuracy += accuracy
 			} else {
 				startTime = time.Now()
 			}
@@ -144,7 +145,7 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			if m.hasStartedTyping {
 				m.currentIndex++
 			} else {
-				m.hasStartedTyping = true // Set flag to true after the first Enter
+				m.hasStartedTyping = true
 			}
 
 			if m.currentIndex < len(m.prompts) {
@@ -153,7 +154,8 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				m.lesson.Input = fmt.Sprintf(m.lesson.Input, prompt)
 				m.viewport.SetContent(strings.Join(m.input, "\n"))
 			} else {
-				m.input = append(m.input, m.senderStyle.Render(typing.DisplayTypingSpeed(startTime, m.lesson.Input, m.lesson, accuracy)))
+				averageAccuracy := m.totalAccuracy / float64(len(m.prompts))
+				m.input = append(m.input, m.senderStyle.Render(typing.DisplayTypingSpeed(startTime, m.lesson.Input, m.lesson, averageAccuracy)))
 				m.viewport.SetContent(strings.Join(m.input, "\n"))
 				return m, tea.Quit
 			}
