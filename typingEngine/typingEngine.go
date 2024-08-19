@@ -6,6 +6,7 @@ import (
 	"github.com/charmbracelet/bubbles/textarea"
 	"github.com/charmbracelet/bubbles/viewport"
 	tea "github.com/charmbracelet/bubbletea"
+	"github.com/charmbracelet/huh"
 	"github.com/charmbracelet/lipgloss"
 	"main.go/data/local/database"
 	"main.go/domain/models"
@@ -44,24 +45,45 @@ var (
 )
 
 func ReadPracticeLessons(practiceId uint) error {
+	practiceLessons, err := database.ReadPracticeLessons(practiceId)
+	if err != nil {
+		return err
+	}
 
-	practiceLessons, _ := database.ReadPracticeLessons(practiceId)
+	// Create a form for lesson selection
+	var selectedLessonIndex int
+	var options []huh.Option[int]
+	for i, lesson := range practiceLessons {
+		optionText := fmt.Sprintf("%d. %s", i+1, lesson.Title)
+		options = append(options, huh.NewOption(optionText, i))
+	}
 
-	for index, lesson := range practiceLessons {
-		if !hasExitedLesson {
-			if index != 0 {
-				time.Sleep(delay)
-			}
-			utils.ClearScreen()
-			p := tea.NewProgram(initialModel(lesson))
+	form := huh.NewForm(
+		huh.NewGroup(
+			huh.NewSelect[int]().
+				Title("Which lesson do you want to practice?").
+				Options(options...).
+				Value(&selectedLessonIndex).
+				Validate(func(i int) error {
+					if i < 0 {
+						return errors.New("please select a lesson to continue")
+					}
+					return nil
+				}),
+		),
+	)
 
-			if _, err := p.Run(); err != nil {
-				return err
-			}
-		} else {
-			return errors.New("user exited the practice")
+	err = form.Run()
+	if err != nil {
+		return err
+	}
 
-		}
+	utils.ClearScreen()
+	lesson := practiceLessons[selectedLessonIndex]
+	p := tea.NewProgram(initialModel(lesson))
+
+	if _, err := p.Run(); err != nil {
+		return err
 	}
 
 	return nil
@@ -99,7 +121,6 @@ func initialModel(lesson models.Lesson) model {
 		lesson:           &lesson,
 		prompts:          lesson.Content,
 		senderStyle:      lipgloss.NewStyle().Foreground(lipgloss.Color("205")).Bold(true),
-		titleStyle:       lipgloss.NewStyle().Foreground(lipgloss.Color("#6361e4")),
 		currentIndex:     0,
 		hasStartedTyping: false,
 		instructions:     " (Press Enter to continue, esc to exit)",
