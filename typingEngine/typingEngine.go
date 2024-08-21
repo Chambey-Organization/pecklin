@@ -31,7 +31,7 @@ type model struct {
 	lesson           *models.Lesson
 	prompts          []models.LessonContent
 	currentIndex     int
-	instructions     string
+	startTime        time.Time
 	totalAccuracy    float64
 	hasStartedTyping bool
 }
@@ -39,7 +39,6 @@ type model struct {
 var (
 	hasExitedLesson  = false
 	delay            = 5 * time.Second
-	startTime        = time.Now()
 	accuracy         float64
 	highlightedInput string
 )
@@ -103,16 +102,20 @@ func initialModel(lesson models.Lesson) model {
 
 	ta.ShowLineNumbers = false
 
-	title := fmt.Sprintf(" Welcome to lesson %s", lesson.Title)
+	var titleStyle = lipgloss.NewStyle().Bold(true).Foreground(lipgloss.Color("#6361e4"))
+	var input []string
+
+	titleText := fmt.Sprintf(" Welcome to lesson %s", lesson.Title)
+	input = append(input)
+	title := fmt.Sprintf(titleStyle.Render(titleText))
 
 	vp := viewport.New(100, 10)
-	var titleStyle = lipgloss.NewStyle().Bold(true).Foreground(lipgloss.Color("#6361e4"))
 
 	vp.SetContent(titleStyle.Render(title))
 
 	ta.KeyMap.InsertNewline.SetEnabled(false)
 
-	return model{
+	m := model{
 		textarea:         ta,
 		input:            []string{},
 		viewport:         vp,
@@ -123,8 +126,16 @@ func initialModel(lesson models.Lesson) model {
 		senderStyle:      lipgloss.NewStyle().Foreground(lipgloss.Color("205")).Bold(true),
 		currentIndex:     0,
 		hasStartedTyping: false,
-		instructions:     " (Press Enter to continue, esc to exit)",
 	}
+
+	if len(m.lesson.Content) > 0 {
+		question := m.lesson.Content[m.currentIndex].Prompt
+		m.input = append(m.input, m.senderStyle.Render(" Prompt: ")+question)
+		m.startTime = time.Now()
+		m.viewport.SetContent(strings.Join(m.input, "\n"))
+	}
+
+	return m
 }
 
 func (m model) Init() tea.Cmd {
@@ -148,7 +159,6 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			fmt.Println(m.textarea.Value())
 			return m, tea.Quit
 		case tea.KeyEnter:
-			m.instructions = " (Press esc to exit)"
 			input := m.textarea.Value()
 
 			if len(input) > 0 {
@@ -156,19 +166,11 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				highlightedInput, accuracy = CompareAndHighlightInput(input, prompt)
 				m.input = append(m.input, m.senderStyle.Render(fmt.Sprintf(" Input: %s (%.2f%% correct)\n", highlightedInput, accuracy)))
 				m.totalAccuracy += accuracy
-			} else {
-				startTime = time.Now()
 			}
 
 			m.textarea.Reset()
 			m.viewport.GotoTop()
-
-			if m.hasStartedTyping {
-				m.currentIndex++
-			} else {
-				m.hasStartedTyping = true
-			}
-
+			m.currentIndex++
 			if m.currentIndex < len(m.prompts) {
 				prompt := m.prompts[m.currentIndex]
 				m.input = append(m.input, m.titleStyle.Render(" Prompt: ")+prompt.Prompt)
@@ -176,7 +178,7 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				m.viewport.SetContent(strings.Join(m.input, "\n"))
 			} else {
 				averageAccuracy := m.totalAccuracy / float64(len(m.prompts))
-				m.input = append(m.input, m.senderStyle.Render(typing.DisplayTypingSpeed(startTime, m.lesson.Input, m.lesson, averageAccuracy)))
+				m.input = append(m.input, m.senderStyle.Render(typing.DisplayTypingSpeed(m.startTime, m.lesson.Input, m.lesson, averageAccuracy)))
 				m.viewport.SetContent(strings.Join(m.input, "\n"))
 				return m, tea.Quit
 			}
@@ -195,7 +197,7 @@ func (m model) View() string {
 		"%s\n\n%s\n\n%s",
 		m.viewport.View(),
 		m.textarea.View(),
-		m.instructions,
+		" (Press esc to exit)",
 	) + "\n"
 }
 func CompareAndHighlightInput(input string, prompt string) (string, float64) {
