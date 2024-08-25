@@ -16,7 +16,8 @@ import (
 )
 
 var (
-	practiceId string
+	practiceId        string
+	hasExitedPractice = false
 )
 
 func main() {
@@ -69,13 +70,12 @@ func main() {
 	}
 
 	practice, err := strconv.ParseUint(practiceId, 10, 32)
-	
-	err = typingEngine.ReadPracticeLessons(uint(practice))
 
-	if err == nil {
+	err = typingEngine.ReadPracticeLessons(uint(practice), &hasExitedPractice)
+
+	if err = typingEngine.ReadPracticeLessons(uint(practice), &hasExitedPractice); err != nil {
+		log.Fatal(err)
 		return
-	} else {
-		fmt.Printf("Exited lessons with error  %s\n", err.Error())
 	}
 
 }

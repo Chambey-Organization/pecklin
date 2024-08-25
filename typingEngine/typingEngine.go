@@ -3,15 +3,19 @@ package typingEngine
 import (
 	"errors"
 	"fmt"
+	"github.com/charmbracelet/bubbles/progress"
 	"github.com/charmbracelet/bubbles/textarea"
 	"github.com/charmbracelet/bubbles/viewport"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/huh"
 	"github.com/charmbracelet/lipgloss"
+	"log"
 	"main.go/data/local/database"
 	"main.go/domain/models"
+	"main.go/pkg/controllers/progressBar"
 	"main.go/pkg/controllers/typing"
 	"main.go/pkg/utils"
+	"os"
 	"strings"
 	"time"
 )
@@ -34,6 +38,7 @@ type model struct {
 	startTime        time.Time
 	totalAccuracy    float64
 	hasStartedTyping bool
+	progress         progressBar.ProgressModel
 }
 
 var (
@@ -43,46 +48,54 @@ var (
 	highlightedInput string
 )
 
-func ReadPracticeLessons(practiceId uint) error {
-	practiceLessons, err := database.ReadPracticeLessons(practiceId)
-	if err != nil {
-		return err
-	}
+func ReadPracticeLessons(practiceId uint, hasExitedPractice *bool) error {
 
-	// Create a form for lesson selection
-	var selectedLessonIndex int
-	var options []huh.Option[int]
-	for i, lesson := range practiceLessons {
-		optionText := fmt.Sprintf("%d. %s", i+1, lesson.Title)
-		options = append(options, huh.NewOption(optionText, i))
-	}
+	for !hasExitedLesson {
+		practiceLessons, err := database.ReadPracticeLessons(practiceId)
+		if err != nil {
+			return err
+		}
 
-	form := huh.NewForm(
-		huh.NewGroup(
-			huh.NewSelect[int]().
-				Title("Which lesson do you want to practice?").
-				Options(options...).
-				Value(&selectedLessonIndex).
-				Validate(func(i int) error {
-					if i < 0 {
-						return errors.New("please select a lesson to continue")
-					}
-					return nil
-				}),
-		),
-	)
+		var selectedLessonIndex int
+		var options []huh.Option[int]
+		for i, lesson := range practiceLessons {
+			optionText := fmt.Sprintf("%d. %s", i+1, lesson.Title)
+			options = append(options, huh.NewOption(optionText, i))
+		}
 
-	err = form.Run()
-	if err != nil {
-		return err
-	}
+		form := huh.NewForm(
+			huh.NewGroup(
+				huh.NewSelect[int]().
+					Title("Which lesson do you want to practice?").
+					Options(options...).
+					Value(&selectedLessonIndex).
+					Validate(func(i int) error {
+						if i < 0 {
+							return errors.New("please select a lesson to continue")
+						}
+						return nil
+					}),
+			),
+		)
 
-	utils.ClearScreen()
-	lesson := practiceLessons[selectedLessonIndex]
-	p := tea.NewProgram(initialModel(lesson))
+		err = form.Run()
+		if err != nil {
+			return err
+		}
+		utils.ClearScreen()
+		lesson := practiceLessons[selectedLessonIndex]
+		p := tea.NewProgram(initialModel(lesson))
 
-	if _, err := p.Run(); err != nil {
-		return err
+		if _, err := p.Run(); err != nil {
+			return err
+		}
+
+		if !hasExitedLesson {
+			time.Sleep(delay)
+			utils.ClearScreen()
+		} else {
+			*hasExitedPractice = true
+		}
 	}
 
 	return nil
@@ -115,6 +128,9 @@ func initialModel(lesson models.Lesson) model {
 
 	ta.KeyMap.InsertNewline.SetEnabled(false)
 
+	prog := progress.New(progress.WithDefaultGradient())
+	prog.Width = 50
+
 	m := model{
 		textarea:         ta,
 		input:            []string{},
@@ -126,13 +142,24 @@ func initialModel(lesson models.Lesson) model {
 		senderStyle:      lipgloss.NewStyle().Foreground(lipgloss.Color("205")).Bold(true),
 		currentIndex:     0,
 		hasStartedTyping: false,
+		progress:         progressBar.NewProgressModel(),
 	}
 
 	if len(m.lesson.Content) > 0 {
+		m.progress.Progress.Width = 50
 		question := m.lesson.Content[m.currentIndex].Prompt
 		m.input = append(m.input, m.senderStyle.Render(" Prompt: ")+question)
-		m.startTime = time.Now()
 		m.viewport.SetContent(strings.Join(m.input, "\n"))
+		m.startTime = time.Now()
+
+		f, err := os.OpenFile("debugFile", os.O_RDWR|os.O_CREATE|os.O_APPEND, 0666)
+		if err != nil {
+			log.Fatalf("error opening file: %v", err)
+		}
+		defer f.Close()
+
+		log.SetOutput(f)
+		log.Println(fmt.Sprintf("started the lesson at %s \n", m.startTime))
 	}
 
 	return m
@@ -173,6 +200,9 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			m.currentIndex++
 			if m.currentIndex < len(m.prompts) {
 				prompt := m.prompts[m.currentIndex]
+				typingProgress := float64(len(input)) / float64(len(prompt.Prompt))
+				m.progress.Progress.SetPercent(typingProgress)
+
 				m.input = append(m.input, m.titleStyle.Render(" Prompt: ")+prompt.Prompt)
 				m.lesson.Input = fmt.Sprintf(m.lesson.Input, prompt)
 				m.viewport.SetContent(strings.Join(m.input, "\n"))
@@ -194,9 +224,10 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 func (m model) View() string {
 	return fmt.Sprintf(
-		"%s\n\n%s\n\n%s",
+		"%s\n\n%s\n\n%s\n\n%s",
 		m.viewport.View(),
 		m.textarea.View(),
+		m.progress.View(),
 		" (Press esc to exit)",
 	) + "\n"
 }
