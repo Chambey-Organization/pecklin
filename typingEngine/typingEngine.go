@@ -25,12 +25,14 @@ type (
 )
 
 type model struct {
-	viewport         viewport.Model
-	input            []string
-	textarea         textarea.Model
-	senderStyle      lipgloss.Style
-	questionStyle    lipgloss.Style
-	titleStyle       lipgloss.Style
+	viewport viewport.Model
+	input    []string
+	textarea textarea.Model
+
+	titleStyle   lipgloss.Style
+	promptStyle  lipgloss.Style
+	resultsStyle lipgloss.Style
+
 	err              error
 	lesson           *models.Lesson
 	prompts          []models.LessonContent
@@ -115,7 +117,7 @@ func initialModel(lesson models.Lesson) model {
 
 	ta.ShowLineNumbers = false
 
-	var titleStyle = lipgloss.NewStyle().Bold(true).Foreground(lipgloss.Color("#6361e4"))
+	var titleStyle = lipgloss.NewStyle().Bold(true).Foreground(lipgloss.Color("#211efb"))
 	var input []string
 
 	titleText := fmt.Sprintf(" Welcome to lesson %s", lesson.Title)
@@ -139,7 +141,9 @@ func initialModel(lesson models.Lesson) model {
 		totalAccuracy:    0,
 		lesson:           &lesson,
 		prompts:          lesson.Content,
-		senderStyle:      lipgloss.NewStyle().Foreground(lipgloss.Color("205")).Bold(true),
+		titleStyle:       lipgloss.NewStyle().Foreground(lipgloss.Color("#211efb")).Bold(true),
+		promptStyle:      lipgloss.NewStyle().Foreground(lipgloss.Color("#53C2C5")).Bold(true),
+		resultsStyle:     lipgloss.NewStyle().Foreground(lipgloss.Color("#f817b0")).Bold(true),
 		currentIndex:     0,
 		hasStartedTyping: false,
 		progress:         progressBar.NewProgressModel(),
@@ -147,8 +151,8 @@ func initialModel(lesson models.Lesson) model {
 
 	if len(m.lesson.Content) > 0 {
 		m.progress.Progress.Width = 50
-		question := m.lesson.Content[m.currentIndex].Prompt
-		m.input = append(m.input, m.senderStyle.Render(" Prompt: ")+question)
+		prompt := m.lesson.Content[m.currentIndex].Prompt
+		m.input = append(m.input, " Prompt: "+m.promptStyle.Render(prompt))
 		m.viewport.SetContent(strings.Join(m.input, "\n"))
 		m.startTime = time.Now()
 
@@ -191,7 +195,7 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			if len(input) > 0 {
 				prompt := m.prompts[m.currentIndex].Prompt
 				highlightedInput, accuracy = CompareAndHighlightInput(input, prompt)
-				m.input = append(m.input, m.senderStyle.Render(fmt.Sprintf(" Input: %s (%.2f%% correct)\n", highlightedInput, accuracy)))
+				m.input = append(m.input, fmt.Sprintf(" Input: %s (%.2f%% correct)\n", highlightedInput, accuracy))
 				m.totalAccuracy += accuracy
 			}
 
@@ -203,12 +207,12 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				typingProgress := float64(len(input)) / float64(len(prompt.Prompt))
 				m.progress.Progress.SetPercent(typingProgress)
 
-				m.input = append(m.input, m.titleStyle.Render(" Prompt: ")+prompt.Prompt)
+				m.input = append(m.input, " Prompt: "+m.promptStyle.Render(prompt.Prompt))
 				m.lesson.Input = fmt.Sprintf(m.lesson.Input, prompt)
 				m.viewport.SetContent(strings.Join(m.input, "\n"))
 			} else {
 				averageAccuracy := m.totalAccuracy / float64(len(m.prompts))
-				m.input = append(m.input, m.senderStyle.Render(typing.DisplayTypingSpeed(m.startTime, m.lesson.Input, m.lesson, averageAccuracy)))
+				m.input = append(m.input, m.resultsStyle.Render(typing.DisplayTypingSpeed(m.startTime, m.lesson.Input, m.lesson, averageAccuracy)))
 				m.viewport.SetContent(strings.Join(m.input, "\n"))
 				return m, tea.Quit
 			}

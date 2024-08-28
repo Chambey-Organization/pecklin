@@ -36,5 +36,5 @@ func DisplayTypingSpeed(startTime time.Time, inputWords string, lesson *models.L
 		return fmt.Sprintf("Error saving your progress: %v", err)
 	}
 
-	return fmt.Sprintf("\n\n Congratulations! You have completed lesson %s\n Your typing speed is: %.2f WPM\n", lesson.Title, currentTypingSpeed)
+	return fmt.Sprintf("\n\n Congratulations! You have completed lesson %s\n Your typing speed is: %.2f WPM with an accuracy of %.2f%%\n", lesson.Title, currentTypingSpeed, accuracy)
 }
