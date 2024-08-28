@@ -23,6 +23,9 @@ func DisplayTypingSpeed(startTime time.Time, inputWords string, lesson *models.L
 
 	log.SetOutput(f)
 	log.Println(fmt.Sprintf("completed the lesson at %s \n", endTime))
+	log.Println(fmt.Sprintf("time difference is  %s \n", duration))
+	log.Println(fmt.Sprintf("words typed  %s \n", inputWords))
+	log.Println(fmt.Sprintf("words length  %d \n", len(inputWords)))
 
 	progress := models.Progress{
 		CurrentSpeed: currentTypingSpeed,
