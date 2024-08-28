@@ -2,11 +2,9 @@ package typing
 
 import (
 	"fmt"
-	"log"
 	"main.go/data/local/database"
 	"main.go/domain/models"
 	"main.go/pkg/utils"
-	"os"
 	"time"
 )
 
@@ -15,18 +13,6 @@ func DisplayTypingSpeed(startTime time.Time, inputWords string, lesson *models.L
 	duration := endTime.Sub(startTime)
 	currentTypingSpeed := utils.CalculateTypingSpeed(inputWords, duration)
 
-	f, err := os.OpenFile("debugFile", os.O_RDWR|os.O_CREATE|os.O_APPEND, 0666)
-	if err != nil {
-		log.Fatalf("error opening file: %v", err)
-	}
-	defer f.Close()
-
-	log.SetOutput(f)
-	log.Println(fmt.Sprintf("completed the lesson at %s \n", endTime))
-	log.Println(fmt.Sprintf("time difference is  %s \n", duration))
-	log.Println(fmt.Sprintf("words typed  %s \n", inputWords))
-	log.Println(fmt.Sprintf("words length  %d \n", len(inputWords)))
-
 	progress := models.Progress{
 		CurrentSpeed: currentTypingSpeed,
 		BestSpeed:    currentTypingSpeed,
@@ -34,6 +20,9 @@ func DisplayTypingSpeed(startTime time.Time, inputWords string, lesson *models.L
 		Complete:     true,
 		LessonID:     lesson.ID,
 	}
+	database.WriteToDebugFile("input string", inputWords)
+	database.WriteToDebugFile("duration ", duration.String())
+	database.WriteToDebugFile("input length ", fmt.Sprintf("%d", len(inputWords)))
 
 	if err := database.CompleteLesson(&progress); err != nil {
 		return fmt.Sprintf("Error saving your progress: %v", err)

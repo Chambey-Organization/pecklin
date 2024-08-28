@@ -9,13 +9,11 @@ import (
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/huh"
 	"github.com/charmbracelet/lipgloss"
-	"log"
 	"main.go/data/local/database"
 	"main.go/domain/models"
 	"main.go/pkg/controllers/progressBar"
 	"main.go/pkg/controllers/typing"
 	"main.go/pkg/utils"
-	"os"
 	"strings"
 	"time"
 )
@@ -25,14 +23,13 @@ type (
 )
 
 type model struct {
-	viewport viewport.Model
-	input    []string
-	textarea textarea.Model
-
-	titleStyle   lipgloss.Style
-	promptStyle  lipgloss.Style
-	resultsStyle lipgloss.Style
-
+	viewport         viewport.Model
+	prompt           []string
+	input            string
+	textarea         textarea.Model
+	titleStyle       lipgloss.Style
+	promptStyle      lipgloss.Style
+	resultsStyle     lipgloss.Style
 	err              error
 	lesson           *models.Lesson
 	prompts          []models.LessonContent
@@ -135,9 +132,10 @@ func initialModel(lesson models.Lesson) model {
 
 	m := model{
 		textarea:         ta,
-		input:            []string{},
+		prompt:           []string{},
 		viewport:         vp,
 		err:              nil,
+		input:            "",
 		totalAccuracy:    0,
 		lesson:           &lesson,
 		prompts:          lesson.Content,
@@ -152,18 +150,12 @@ func initialModel(lesson models.Lesson) model {
 	if len(m.lesson.Content) > 0 {
 		m.progress.Progress.Width = 50
 		prompt := m.lesson.Content[m.currentIndex].Prompt
-		m.input = append(m.input, " Prompt: "+m.promptStyle.Render(prompt))
-		m.viewport.SetContent(strings.Join(m.input, "\n"))
+		m.input = prompt
+		m.prompt = append(m.prompt, " Prompt: "+m.promptStyle.Render(prompt))
+		m.viewport.SetContent(strings.Join(m.prompt, "\n"))
 		m.startTime = time.Now()
 
-		f, err := os.OpenFile("debugFile", os.O_RDWR|os.O_CREATE|os.O_APPEND, 0666)
-		if err != nil {
-			log.Fatalf("error opening file: %v", err)
-		}
-		defer f.Close()
-
-		log.SetOutput(f)
-		log.Println(fmt.Sprintf("started the lesson at %s \n", m.startTime))
+		database.WriteToDebugFile("m.input is ->", m.input)
 	}
 
 	return m
@@ -195,7 +187,7 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			if len(input) > 0 {
 				prompt := m.prompts[m.currentIndex].Prompt
 				highlightedInput, accuracy = CompareAndHighlightInput(input, prompt)
-				m.input = append(m.input, fmt.Sprintf(" Input: %s (%.2f%% correct)\n", highlightedInput, accuracy))
+				m.prompt = append(m.prompt, fmt.Sprintf(" Input: %s (%.2f%% correct)\n", highlightedInput, accuracy))
 				m.totalAccuracy += accuracy
 			}
 
@@ -203,17 +195,19 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			m.viewport.GotoTop()
 			m.currentIndex++
 			if m.currentIndex < len(m.prompts) {
-				prompt := m.prompts[m.currentIndex]
-				typingProgress := float64(len(input)) / float64(len(prompt.Prompt))
+				prompt := m.prompts[m.currentIndex].Prompt
+				typingProgress := float64(len(input)) / float64(len(prompt))
 				m.progress.Progress.SetPercent(typingProgress)
 
-				m.input = append(m.input, " Prompt: "+m.promptStyle.Render(prompt.Prompt))
-				m.lesson.Input = fmt.Sprintf(m.lesson.Input, prompt)
-				m.viewport.SetContent(strings.Join(m.input, "\n"))
+				m.prompt = append(m.prompt, " Prompt: "+m.promptStyle.Render(prompt))
+
+				m.input = fmt.Sprintf("%s %s", m.input, prompt)
+				m.viewport.SetContent(strings.Join(m.prompt, "\n"))
 			} else {
 				averageAccuracy := m.totalAccuracy / float64(len(m.prompts))
-				m.input = append(m.input, m.resultsStyle.Render(typing.DisplayTypingSpeed(m.startTime, m.lesson.Input, m.lesson, averageAccuracy)))
-				m.viewport.SetContent(strings.Join(m.input, "\n"))
+				database.WriteToDebugFile("m.input is while displaying ->", m.input)
+				m.prompt = append(m.prompt, m.resultsStyle.Render(typing.DisplayTypingSpeed(m.startTime, m.input, m.lesson, averageAccuracy)))
+				m.viewport.SetContent(strings.Join(m.prompt, "\n"))
 				return m, tea.Quit
 			}
 		}

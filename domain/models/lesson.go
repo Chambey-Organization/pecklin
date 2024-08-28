@@ -5,5 +5,4 @@ type Lesson struct {
 	PracticeID uint            `json:"-"`
 	Title      string          `json:"title"`
 	Content    []LessonContent `gorm:"foreignKey:LessonID;constraint:OnUpdate:CASCADE,OnDelete:CASCADE;" json:"content"`
-	Input      string          `gorm:"-"`
 }

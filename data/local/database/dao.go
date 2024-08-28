@@ -1,8 +1,11 @@
 package database
 
 import (
+	"fmt"
 	_ "github.com/mattn/go-sqlite3"
+	"log"
 	"main.go/domain/models"
+	"os"
 )
 
 func CompleteLesson(progress *models.Progress) error {
@@ -65,4 +68,15 @@ func ReadLessonContent(lessonId uint) []models.LessonContent {
 	var content []models.LessonContent
 	DB.Where("lesson_id", lessonId).Find(&content)
 	return content
+}
+
+func WriteToDebugFile(description string, input string) {
+	f, err := os.OpenFile("debugFile", os.O_RDWR|os.O_CREATE|os.O_APPEND, 0666)
+	if err != nil {
+		log.Fatalf("error opening file: %v", err)
+	}
+	defer f.Close()
+
+	log.SetOutput(f)
+	log.Println(fmt.Sprintf("%s %s \n", description, input))
 }
