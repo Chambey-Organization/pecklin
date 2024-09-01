@@ -1,0 +1,32 @@
+name: Build and Upload macOS Executable
+
+on:
+  push:
+    branches:
+      - charm-integration
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  build:
+    runs-on: macos-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Set up Go
+        uses: actions/setup-go@v4
+        with:
+          go-version: '1.23.0'
+
+      - name: Build executable
+        run: GOOS=darwin GOARCH=amd64 go build -o myapp-darwin-amd64
+
+      - name: Upload executable as artifact
+        id: uploadArtifact
+        uses: actions/upload-artifact@v1
+        with:
+          name: macos
+          path: myapp-darwin-amd64

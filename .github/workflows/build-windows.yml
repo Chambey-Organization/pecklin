@@ -1,0 +1,35 @@
+name: Build and Upload Windows Executable
+
+on:
+  push:
+    branches:
+      - charm-integration
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  build:
+    runs-on: windows-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Set up Go
+        uses: actions/setup-go@v4
+        with:
+          go-version: '1.23.0'
+
+      - name: Build executable
+        run: |
+          $env:GOOS="windows"
+          $env:GOARCH="amd64"
+          go build -o myapp-windows-amd64.exe
+
+      - name: Upload executable as artifact
+        id: uploadArtifact
+        uses: actions/upload-artifact@v1
+        with:
+          name: windows
+          path: myapp-windows-amd64.exe

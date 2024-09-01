@@ -1,69 +1,81 @@
 package main
 
 import (
+	"errors"
 	"fmt"
-	"github.com/eiannone/keyboard"
-	"main.go/database"
-	"main.go/pkg/utils/clear"
+	tea "github.com/charmbracelet/bubbletea"
+	"github.com/charmbracelet/huh"
+	"log"
+	"main.go/data/local/database"
+	"main.go/data/remote"
+	"main.go/pkg/controllers/loader"
+	"main.go/pkg/utils"
 	"main.go/typingEngine"
+	"os"
+	"strconv"
+)
+
+var (
+	practiceId        string
+	hasExitedPractice = false
 )
 
 func main() {
 	database.InitializeDatabase()
-	var exitErr bool
-	lessons := database.ReadCompletedLesson()
-	allLessons := database.ReadAllLessons()
 
-	err := typingEngine.ReadTextLessons(lessons, &exitErr)
-	if exitErr {
-		return
-	}
-	clear.ClearScreen()
-	fmt.Println("\n Congratulations! You have completed all the lessons \n \nPress RETURN to redo the typing practice, SPACE to view lesson stats and ESC to quit")
+	m := loader.InitialModel()
+	p := tea.NewProgram(m)
+	go func() {
 
-	if err := keyboard.Open(); err != nil {
-		panic(err)
-	}
-	defer func() {
-		_ = keyboard.Close()
+		err := remote.FetchPractices()
+		if err != nil {
+			p.Send(loader.ErrMsg(err))
+			return
+		}
+
+		p.Send(loader.DataLoadedMsg{})
+		utils.ClearScreen()
 	}()
 
-	for {
-		_, key, err := keyboard.GetKey()
-		if err != nil {
-			break
-		}
-
-		if key == keyboard.KeyEnter {
-			err := keyboard.Close()
-			if err != nil {
-				break
-			}
-			database.RedoLessons()
-			lessons = database.ReadCompletedLesson()
-
-			err = typingEngine.ReadTextLessons(lessons, &exitErr)
-			if exitErr {
-				return
-			}
-			if err != nil {
-				return
-			}
-		}
-
-		if key == keyboard.KeySpace {
-			for _, lesson := range allLessons {
-				fmt.Printf("\nLesson Title: %s\n", lesson.Title)
-				fmt.Printf("Typing Speed: %.2f WPM\n", lesson.BestSpeed)
-				fmt.Println("---------------------------------")
-			}
-		}
-		if key == keyboard.KeyEsc {
-			break
-		}
+	if _, err := p.Run(); err != nil {
+		fmt.Println(err)
+		os.Exit(1)
 	}
 
+	practices := database.ReadPractices()
+
+	var options []huh.Option[string]
+	for _, practice := range practices {
+		optionText := fmt.Sprintf("%d. %s", practice.ID, practice.Title)
+		options = append(options, huh.NewOption(optionText, strconv.Itoa(int(practice.ID))))
+	}
+
+	form := huh.NewForm(
+		huh.NewGroup(
+			huh.NewSelect[string]().Title("Which typing practice do you want to practice today?").Options(
+				options...,
+			).Value(&practiceId).Validate(func(str string) error {
+				if practiceId == "" {
+					err := fmt.Sprintf("Please select a lesson to continue")
+					return errors.New(err)
+				}
+				return nil
+			}),
+		),
+	)
+
+	err := form.Run()
 	if err != nil {
+		log.Fatal(err)
+	}
+
+	practice, err := strconv.ParseUint(practiceId, 10, 32)
+
+	err = typingEngine.ReadPracticeLessons(uint(practice), &hasExitedPractice)
+
+	if err = typingEngine.ReadPracticeLessons(uint(practice), &hasExitedPractice); err != nil {
+		log.Fatal(err)
 		return
 	}
+
 }
