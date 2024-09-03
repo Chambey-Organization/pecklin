@@ -10,7 +10,7 @@ import (
 )
 
 func FetchPractices() error {
-	response, err := http.Get("https://mula-52f57-default-rtdb.firebaseio.com/pecking/-O4ByTT-VjlzLrLVagoJ.json")
+	response, err := http.Get("https://charlesmuchogo.com/api/practice")
 	if err != nil {
 		return fmt.Errorf("failed to get response: %v", err)
 	}
@@ -25,11 +25,11 @@ func FetchPractices() error {
 		return fmt.Errorf("failed to read response body: %v", err)
 	}
 
-	var practices []models.Practice
-	if err := json.Unmarshal(responseData, &practices); err != nil {
+	var getPracticeDTO models.GetPracticesDTO
+	if err := json.Unmarshal(responseData, &getPracticeDTO); err != nil {
 		return fmt.Errorf("failed to unmarshal JSON: %v", err)
 	}
 
-	database.InsertPractices(practices)
+	database.InsertPractices(getPracticeDTO.Practices)
 	return nil
 }

@@ -45,6 +45,12 @@ func ReadCompletedLesson() []models.Lesson {
 }
 
 func InsertPractices(practices []models.Practice) {
+	if len(practices) > 0 {
+		DB.Delete(&models.Practice{})
+		DB.Delete(&models.Lesson{})
+		DB.Delete(&models.LessonContent{})
+	}
+
 	for _, practice := range practices {
 		DB.Save(&practice)
 	}

@@ -45,14 +45,16 @@ func main() {
 	practices := database.ReadPractices()
 
 	var options []huh.Option[string]
+	var number = 1
 	for _, practice := range practices {
-		optionText := fmt.Sprintf("%d. %s", practice.ID, practice.Title)
+		optionText := fmt.Sprintf("%d. %s", number, practice.Title)
 		options = append(options, huh.NewOption(optionText, strconv.Itoa(int(practice.ID))))
+		number++
 	}
 
 	form := huh.NewForm(
 		huh.NewGroup(
-			huh.NewSelect[string]().Title("Which typing practice do you want to practice today?").Options(
+			huh.NewSelect[string]().Title("Main menu").Options(
 				options...,
 			).Value(&practiceId).Validate(func(str string) error {
 				if practiceId == "" {

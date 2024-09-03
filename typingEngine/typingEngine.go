@@ -121,7 +121,7 @@ func initialModel(lesson models.Lesson) model {
 	input = append(input)
 	title := fmt.Sprintf(titleStyle.Render(titleText))
 
-	vp := viewport.New(100, 10)
+	vp := viewport.New(100, 15)
 
 	vp.SetContent(titleStyle.Render(title))
 
