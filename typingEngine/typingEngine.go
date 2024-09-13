@@ -65,12 +65,12 @@ func ReadPracticeLessons(practiceId uint, hasExitedPractice *bool) error {
 		form := huh.NewForm(
 			huh.NewGroup(
 				huh.NewSelect[int]().
-					Title("Which lesson do you want to practice?").
+					Title("Select Lesson").
 					Options(options...).
 					Value(&selectedLessonIndex).
 					Validate(func(i int) error {
 						if i < 0 {
-							return errors.New("please select a lesson to continue")
+							return errors.New("select a lesson to continue")
 						}
 						return nil
 					}),
