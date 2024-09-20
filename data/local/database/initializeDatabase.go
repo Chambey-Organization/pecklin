@@ -9,7 +9,7 @@ var DB *gorm.DB
 
 func InitializeDatabase() {
 	var err error
-	DB, err = gorm.Open("sqlite3", "pecklin.db")
+	DB, err = gorm.Open("sqlite3", ".pecklin.db")
 	if err != nil {
 		panic(err.Error())
 	}

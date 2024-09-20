@@ -26,6 +26,7 @@ type model struct {
 	viewport         viewport.Model
 	prompt           []string
 	input            string
+	textAreaValue    string
 	textarea         textarea.Model
 	titleStyle       lipgloss.Style
 	promptStyle      lipgloss.Style
@@ -48,7 +49,6 @@ var (
 )
 
 func ReadPracticeLessons(practiceId uint, hasExitedPractice *bool) error {
-
 	for !hasExitedLesson {
 		practiceLessons, err := database.ReadPracticeLessons(practiceId)
 		if err != nil {
@@ -65,12 +65,12 @@ func ReadPracticeLessons(practiceId uint, hasExitedPractice *bool) error {
 		form := huh.NewForm(
 			huh.NewGroup(
 				huh.NewSelect[int]().
-					Title("Which lesson do you want to practice?").
+					Title("Select Lesson").
 					Options(options...).
 					Value(&selectedLessonIndex).
 					Validate(func(i int) error {
 						if i < 0 {
-							return errors.New("please select a lesson to continue")
+							return errors.New("select a lesson to continue")
 						}
 						return nil
 					}),
@@ -136,6 +136,7 @@ func initialModel(lesson models.Lesson) model {
 		viewport:         vp,
 		err:              nil,
 		input:            "",
+		textAreaValue:    "",
 		totalAccuracy:    0,
 		lesson:           &lesson,
 		prompts:          lesson.Content,
@@ -155,7 +156,6 @@ func initialModel(lesson models.Lesson) model {
 		m.viewport.SetContent(strings.Join(m.prompt, "\n"))
 		m.startTime = time.Now()
 
-		database.WriteToDebugFile("m.input is ->", m.input)
 	}
 
 	return m
@@ -179,10 +179,22 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		switch msg.Type {
 		case tea.KeyCtrlC, tea.KeyEsc:
 			hasExitedLesson = true
-			fmt.Println(m.textarea.Value())
 			return m, tea.Quit
+		case tea.KeyBackspace:
+			if len(m.textAreaValue) > 0 && m.currentIndex < len(m.prompts) {
+				m.textAreaValue = m.textAreaValue[:len(m.textAreaValue)-1]
+				prompt := m.prompts[m.currentIndex].Prompt
+
+				// Compare the input and get the highlighted input
+				highlightedInput, _ := CompareAndHighlightInput(m.textAreaValue, prompt)
+				m.textarea.Reset()
+				m.textarea.Prompt = highlightedInput
+
+				typingProgress := float64(len(m.input)) / float64(len(prompt))
+				m.progress.Progress.SetPercent(typingProgress)
+			}
 		case tea.KeyEnter:
-			input := m.textarea.Value()
+			input := m.textAreaValue
 
 			if len(input) > 0 {
 				prompt := m.prompts[m.currentIndex].Prompt
@@ -192,7 +204,12 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			}
 
 			m.textarea.Reset()
+			m.textarea.Blur()
 			m.viewport.GotoTop()
+			m.textarea.Focus()
+			m.textarea.Prompt = "> "
+			m.textAreaValue = ""
+
 			m.currentIndex++
 			if m.currentIndex < len(m.prompts) {
 				prompt := m.prompts[m.currentIndex].Prompt
@@ -203,13 +220,33 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 				m.input = fmt.Sprintf("%s %s", m.input, prompt)
 				m.viewport.SetContent(strings.Join(m.prompt, "\n"))
+
 			} else {
 				averageAccuracy := m.totalAccuracy / float64(len(m.prompts))
 				database.WriteToDebugFile("m.input is while displaying ->", m.input)
 				m.prompt = append(m.prompt, m.resultsStyle.Render(typing.DisplayTypingSpeed(m.startTime, m.input, m.lesson, averageAccuracy)))
 				m.viewport.SetContent(strings.Join(m.prompt, "\n"))
+
 				return m, tea.Quit
 			}
+		}
+
+	default:
+		// Validate while typing for real-time feedback
+		input := m.textarea.Value()
+
+		m.textAreaValue = m.textAreaValue + input
+
+		if len(input) > 0 && m.currentIndex < len(m.prompts) {
+			prompt := m.prompts[m.currentIndex].Prompt
+
+			// Compare the input and get the highlighted input
+			highlightedInput, _ := CompareAndHighlightInput(m.textAreaValue, prompt)
+			m.textarea.Reset()
+			m.textarea.Prompt = highlightedInput
+
+			typingProgress := float64(len(m.input)) / float64(len(prompt))
+			m.progress.Progress.SetPercent(typingProgress)
 		}
 
 	case errMsg:

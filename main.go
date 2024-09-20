@@ -54,7 +54,7 @@ func main() {
 
 	form := huh.NewForm(
 		huh.NewGroup(
-			huh.NewSelect[string]().Title("Main menu").Options(
+			huh.NewSelect[string]().Title("Main Menu").Options(
 				options...,
 			).Value(&practiceId).Validate(func(str string) error {
 				if practiceId == "" {
@@ -72,8 +72,6 @@ func main() {
 	}
 
 	practice, err := strconv.ParseUint(practiceId, 10, 32)
-
-	err = typingEngine.ReadPracticeLessons(uint(practice), &hasExitedPractice)
 
 	if err = typingEngine.ReadPracticeLessons(uint(practice), &hasExitedPractice); err != nil {
 		log.Fatal(err)

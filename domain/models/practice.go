@@ -8,5 +8,6 @@ type GetPracticesDTO struct {
 type Practice struct {
 	ID      uint     `gorm:"primary_key;autoIncrement:true" json:"id"`
 	Title   string   `json:"title"`
+	Active  bool     `json:"active"`
 	Lessons []Lesson `gorm:"foreignKey:PracticeID;constraint:OnUpdate:CASCADE,OnDelete:CASCADE;" json:"lessons"`
 }

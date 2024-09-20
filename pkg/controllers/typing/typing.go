@@ -20,9 +20,6 @@ func DisplayTypingSpeed(startTime time.Time, inputWords string, lesson *models.L
 		Complete:     true,
 		LessonID:     lesson.ID,
 	}
-	database.WriteToDebugFile("input string", inputWords)
-	database.WriteToDebugFile("duration ", duration.String())
-	database.WriteToDebugFile("input length ", fmt.Sprintf("%d", len(inputWords)))
 
 	if err := database.CompleteLesson(&progress); err != nil {
 		return fmt.Sprintf("Error saving your progress: %v", err)
