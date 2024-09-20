@@ -25,11 +25,11 @@ jobs:
         run: |
           $env:GOOS="windows"
           $env:GOARCH="amd64"
-          go build -o myapp-windows-amd64.exe
+          go build -o pecking.exe
 
       - name: Upload executable as artifact
         id: uploadArtifact
         uses: actions/upload-artifact@v4
         with:
           name: windows
-          path: myapp-windows-amd64.exe
+          path: pecking.exe
