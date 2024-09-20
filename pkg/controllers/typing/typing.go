@@ -13,11 +13,20 @@ func DisplayTypingSpeed(startTime time.Time, inputWords string, lesson *models.L
 	duration := endTime.Sub(startTime)
 	currentTypingSpeed := utils.CalculateTypingSpeed(inputWords, duration)
 
+	progressLesson := models.Lesson{
+		ID:         lesson.ID,
+		PracticeID: lesson.PracticeID,
+		Title:      lesson.Title,
+		Active:     lesson.Active,
+		Content:    lesson.Content,
+	}
+
 	progress := models.Progress{
 		CurrentSpeed: currentTypingSpeed,
 		BestSpeed:    currentTypingSpeed,
 		Accuracy:     accuracy,
 		Complete:     true,
+		Lesson:       progressLesson,
 		LessonID:     lesson.ID,
 	}
 
