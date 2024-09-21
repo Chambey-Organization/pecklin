@@ -33,6 +33,12 @@ func CompleteLesson(progress *models.Progress) error {
 	return nil
 }
 
+func GetResults() []models.Progress {
+	var allProgress []models.Progress
+	DB.Preload("Lesson").Find(&allProgress)
+	return allProgress
+}
+
 func InsertPractices(practices []models.Practice) {
 	if len(practices) > 0 {
 		DB.Delete(&models.Practice{})

@@ -208,7 +208,11 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			m.viewport.GotoTop()
 			m.textarea.Focus()
 			m.textarea.Prompt = "> "
+
+			// reset the text area value to blank
 			m.textAreaValue = ""
+			//Reintroduce the placeholder
+			m.textarea.Placeholder = "Type the prompt"
 
 			m.currentIndex++
 			if m.currentIndex < len(m.prompts) {
@@ -243,6 +247,7 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			// Compare the input and get the highlighted input
 			highlightedInput, _ := CompareAndHighlightInput(m.textAreaValue, prompt)
 			m.textarea.Reset()
+			m.textarea.Placeholder = ""
 			m.textarea.Prompt = highlightedInput
 
 			typingProgress := float64(len(m.input)) / float64(len(prompt))
