@@ -35,7 +35,7 @@ func CompleteLesson(progress *models.Progress) error {
 
 func GetResults() []models.Progress {
 	var allProgress []models.Progress
-	DB.Find(&allProgress)
+	DB.Preload("Lesson").Find(&allProgress)
 	return allProgress
 }
 

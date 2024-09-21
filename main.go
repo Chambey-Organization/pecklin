@@ -16,7 +16,7 @@ import (
 )
 
 var (
-	practiceId        string
+	selectedOption    string
 	hasExitedPractice = false
 )
 
@@ -52,13 +52,17 @@ func main() {
 		number++
 	}
 
+	//Add results option
+	optionText := fmt.Sprintf("%d. Results", number)
+	options = append(options, huh.NewOption(optionText, "Results"))
+
 	form := huh.NewForm(
 		huh.NewGroup(
 			huh.NewSelect[string]().Title("Main Menu").Options(
 				options...,
-			).Value(&practiceId).Validate(func(str string) error {
-				if practiceId == "" {
-					err := fmt.Sprintf("Please select a lesson to continue")
+			).Value(&selectedOption).Validate(func(str string) error {
+				if selectedOption == "" {
+					err := fmt.Sprintf("Please select an option to continue")
 					return errors.New(err)
 				}
 				return nil
@@ -71,11 +75,17 @@ func main() {
 		log.Fatal(err)
 	}
 
-	practice, err := strconv.ParseUint(practiceId, 10, 32)
+	if selectedOption == "Results" {
+		if err = typingEngine.ReadMyResults(); err != nil {
+			log.Fatal(err)
+			return
+		}
+	} else {
+		practice, err := strconv.ParseUint(selectedOption, 10, 32)
 
-	if err = typingEngine.ReadPracticeLessons(uint(practice), &hasExitedPractice); err != nil {
-		log.Fatal(err)
-		return
+		if err = typingEngine.ReadPracticeLessons(uint(practice), &hasExitedPractice); err != nil {
+			log.Fatal(err)
+			return
+		}
 	}
-
 }
