@@ -61,8 +61,8 @@ func main() {
 			huh.NewSelect[string]().Title("Main Menu").Options(
 				options...,
 			).Value(&selectedOption).Validate(func(str string) error {
-				if selectedOption == "" {
-					err := fmt.Sprintf("Please select an option to continue")
+				if selectedOption == "3" {
+					err := fmt.Sprintf("Comming soon")
 					return errors.New(err)
 				}
 				return nil
