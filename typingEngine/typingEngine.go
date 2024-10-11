@@ -3,17 +3,18 @@ package typingEngine
 import (
 	"errors"
 	"fmt"
+	"github.com/CharlesMuchogo/GoNavigation/navigation"
 	"github.com/charmbracelet/bubbles/progress"
 	"github.com/charmbracelet/bubbles/textarea"
 	"github.com/charmbracelet/bubbles/viewport"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/huh"
 	"github.com/charmbracelet/lipgloss"
+	"log"
 	"main.go/data/local/database"
 	"main.go/domain/models"
 	"main.go/pkg/controllers/progressBar"
 	"main.go/pkg/controllers/typing"
-	"main.go/pkg/utils"
 	"strings"
 	"time"
 )
@@ -42,62 +43,48 @@ type model struct {
 }
 
 var (
-	hasExitedLesson  = false
-	delay            = 5 * time.Second
 	accuracy         float64
 	highlightedInput string
 )
 
-func ReadPracticeLessons(practiceId uint, hasExitedPractice *bool) error {
-	for !hasExitedLesson {
-		practiceLessons, err := database.ReadPracticeLessons(practiceId)
-		if err != nil {
-			return err
-		}
-
-		var selectedLessonIndex int
-		var options []huh.Option[int]
-		for i, lesson := range practiceLessons {
-			optionText := fmt.Sprintf("%d. %s", i+1, lesson.Title)
-			options = append(options, huh.NewOption(optionText, i))
-		}
-
-		form := huh.NewForm(
-			huh.NewGroup(
-				huh.NewSelect[int]().
-					Title("Select Lesson").
-					Options(options...).
-					Value(&selectedLessonIndex).
-					Validate(func(i int) error {
-						if i < 0 {
-							return errors.New("select a lesson to continue")
-						}
-						return nil
-					}),
-			),
-		)
-
-		err = form.Run()
-		if err != nil {
-			return err
-		}
-		utils.ClearScreen()
-		lesson := practiceLessons[selectedLessonIndex]
-		p := tea.NewProgram(initialModel(lesson))
-
-		if _, err := p.Run(); err != nil {
-			return err
-		}
-
-		if !hasExitedLesson {
-			time.Sleep(delay)
-			utils.ClearScreen()
-		} else {
-			*hasExitedPractice = true
-		}
+func ReadPracticeLessons(practiceId uint) {
+	practiceLessons, err := database.ReadPracticeLessons(practiceId)
+	if err != nil {
+		log.Fatal(err)
 	}
 
-	return nil
+	var selectedLessonIndex int
+	var options []huh.Option[int]
+	for i, lesson := range practiceLessons {
+		optionText := fmt.Sprintf("%d. %s", i+1, lesson.Title)
+		options = append(options, huh.NewOption(optionText, i))
+	}
+
+	form := huh.NewForm(
+		huh.NewGroup(
+			huh.NewSelect[int]().
+				Title("Select Lesson").
+				Options(options...).
+				Value(&selectedLessonIndex).
+				Validate(func(i int) error {
+					if i < 0 {
+						return errors.New("select a lesson to continue")
+					}
+					return nil
+				}),
+		),
+	)
+
+	err = form.Run()
+	if err != nil {
+		log.Fatal(err)
+	}
+	lesson := practiceLessons[selectedLessonIndex]
+	p := tea.NewProgram(initialModel(lesson))
+
+	if _, err := p.Run(); err != nil {
+		log.Fatal(err)
+	}
 }
 
 func initialModel(lesson models.Lesson) model {
@@ -178,7 +165,7 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	case tea.KeyMsg:
 		switch msg.Type {
 		case tea.KeyCtrlC, tea.KeyEsc:
-			hasExitedLesson = true
+			navigation.Navigator.Pop()
 			return m, tea.Quit
 		case tea.KeyBackspace:
 			if len(m.textAreaValue) > 0 && m.currentIndex < len(m.prompts) {
