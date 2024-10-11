@@ -2,7 +2,7 @@ package presentation
 
 import (
 	"fmt"
-	"github.com/CharlesMuchogo/GoNavigation/navigation"
+	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/huh"
 	"log"
 	"main.go/data/local/database"
@@ -22,9 +22,7 @@ func ResultsPage() {
 		number++
 	}
 
-	options = append(options, huh.NewOption("Exit", "Exit"))
-
-	form := huh.NewForm(
+	resultForm := huh.NewForm(
 		huh.NewGroup(
 			huh.NewSelect[string]().Title("Results").Options(
 				options...,
@@ -32,12 +30,9 @@ func ResultsPage() {
 		),
 	)
 
-	err := form.Run()
-	if err != nil {
-		log.Fatal(err)
-	}
+	prog := tea.NewProgram(pageModel{form: resultForm})
 
-	if selectedOption == "Exit" {
-		navigation.Navigator.Pop()
+	if err := prog.Start(); err != nil {
+		log.Fatal(err)
 	}
 }

@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"github.com/CharlesMuchogo/GoNavigation/navigation"
+	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/huh"
 	"log"
 	"main.go/data/local/database"
@@ -41,25 +42,26 @@ func MainMenu() {
 		),
 	)
 
-	err := form.Run()
-	if err != nil {
+	prog := tea.NewProgram(pageModel{form: form, action: navigateAfterValidation})
+
+	if err := prog.Start(); err != nil {
 		log.Fatal(err)
 	}
 
+}
+
+func navigateAfterValidation() {
 	if selectedOption == "Results" {
 		navigation.Navigator.Navigate(func() {
 			ResultsPage()
 		})
 	} else {
 		practice, err := strconv.ParseUint(selectedOption, 10, 32)
-
 		if err != nil {
 			log.Fatal(err)
 		}
-
 		navigation.Navigator.Navigate(func() {
 			PracticeLessons(uint(practice))
-		},
-		)
+		})
 	}
 }
