@@ -181,8 +181,9 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				averageAccuracy := m.totalAccuracy / float64(len(m.prompts))
 				database.WriteToDebugFile("m.input is while displaying ->", m.input)
 				m.prompt = append(m.prompt, m.resultsStyle.Render(typing.DisplayTypingSpeed(m.startTime, m.input, m.lesson, averageAccuracy)))
-				m.viewport.SetContent(strings.Join(m.prompt, "\n"))
 
+				m.viewport.SetContent(strings.Join(m.prompt, "\n"))
+				navigation.Navigator.Pop()
 				return m, tea.Quit
 			}
 		}

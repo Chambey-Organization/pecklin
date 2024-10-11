@@ -55,7 +55,7 @@ func navigateAfterValidation() {
 		navigation.Navigator.Navigate(func() {
 			ResultsPage()
 		})
-	} else {
+	} else if selectedOption != "3" {
 		practice, err := strconv.ParseUint(selectedOption, 10, 32)
 		if err != nil {
 			log.Fatal(err)
