@@ -18,13 +18,13 @@ func (m pageModel) Init() tea.Cmd {
 func (m pageModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	switch msg := msg.(type) {
 	case tea.KeyMsg:
-		switch msg.String() {
-		case "enter":
+		switch msg.Type {
+		case tea.KeyEnter:
 			if m.action != nil {
 				m.action()
+				return m, tea.Quit
 			}
-			return m, tea.Quit
-		case "esc":
+		case tea.KeyEsc:
 			navigation.Navigator.Pop()
 			return m, tea.Quit
 		}

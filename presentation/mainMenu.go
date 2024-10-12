@@ -42,7 +42,11 @@ func MainMenu() {
 		),
 	)
 
-	prog := tea.NewProgram(pageModel{form: form, action: navigateAfterValidation})
+	prog := tea.NewProgram(pageModel{form: form, action: func() {
+		if selectedOption != "3" {
+			navigateAfterValidation()
+		}
+	}})
 
 	if err := prog.Start(); err != nil {
 		log.Fatal(err)
@@ -55,7 +59,7 @@ func navigateAfterValidation() {
 		navigation.Navigator.Navigate(func() {
 			ResultsPage()
 		})
-	} else if selectedOption != "3" {
+	} else {
 		practice, err := strconv.ParseUint(selectedOption, 10, 32)
 		if err != nil {
 			log.Fatal(err)

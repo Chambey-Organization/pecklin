@@ -1,6 +1,7 @@
 package presentation
 
 import (
+	"errors"
 	"fmt"
 	"github.com/CharlesMuchogo/GoNavigation/navigation"
 	"github.com/charmbracelet/bubbles/progress"
@@ -47,8 +48,12 @@ var (
 
 func TypingPage(lesson models.Lesson) {
 	p := tea.NewProgram(initialModel(lesson))
-	if _, err := p.Run(); err != nil {
+
+	if finalModel, err := p.Run(); err != nil {
 		log.Fatal(err)
+	} else if lessonModel, ok := finalModel.(model); ok && lessonModel.err == nil {
+		time.Sleep(time.Second * 7)
+		navigation.Navigator.Pop()
 	}
 }
 
@@ -73,7 +78,7 @@ func initialModel(lesson models.Lesson) model {
 	input = append(input)
 	title := fmt.Sprintf(titleStyle.Render(titleText))
 
-	vp := viewport.New(100, 15)
+	vp := viewport.New(100, 17)
 
 	vp.SetContent(titleStyle.Render(title))
 
@@ -131,6 +136,7 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		switch msg.Type {
 		case tea.KeyCtrlC, tea.KeyEsc:
 			navigation.Navigator.Pop()
+			m.err = errors.New("exited lesson")
 			return m, tea.Quit
 		case tea.KeyBackspace:
 			if len(m.textAreaValue) > 0 && m.currentIndex < len(m.prompts) {
@@ -168,6 +174,7 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 			m.currentIndex++
 			if m.currentIndex < len(m.prompts) {
+
 				prompt := m.prompts[m.currentIndex].Prompt
 				typingProgress := float64(len(input)) / float64(len(prompt))
 				m.progress.Progress.SetPercent(typingProgress)
@@ -180,10 +187,10 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			} else {
 				averageAccuracy := m.totalAccuracy / float64(len(m.prompts))
 				database.WriteToDebugFile("m.input is while displaying ->", m.input)
+				m.textarea.Prompt = " "
+				m.textarea.Placeholder = ""
 				m.prompt = append(m.prompt, m.resultsStyle.Render(typing.DisplayTypingSpeed(m.startTime, m.input, m.lesson, averageAccuracy)))
-
 				m.viewport.SetContent(strings.Join(m.prompt, "\n"))
-				navigation.Navigator.Pop()
 				return m, tea.Quit
 			}
 		}

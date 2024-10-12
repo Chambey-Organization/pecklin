@@ -217,7 +217,7 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				database.WriteToDebugFile("m.input is while displaying ->", m.input)
 				m.prompt = append(m.prompt, m.resultsStyle.Render(typing.DisplayTypingSpeed(m.startTime, m.input, m.lesson, averageAccuracy)))
 				m.viewport.SetContent(strings.Join(m.prompt, "\n"))
-
+				time.Sleep(time.Second * 10)
 				return m, tea.Quit
 			}
 		}
