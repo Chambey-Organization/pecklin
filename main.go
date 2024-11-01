@@ -18,10 +18,9 @@ func main() {
 	m := loader.InitialModel()
 	p := tea.NewProgram(m)
 	go func() {
-
 		err := remote.FetchPractices()
 		if err != nil {
-			p.Send(loader.ErrMsg(err))
+			p.Send(loader.DataLoadedMsg{})
 			return
 		}
 

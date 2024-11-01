@@ -119,19 +119,29 @@ func initialModel(lesson models.Lesson) model {
 }
 
 func (m model) Init() tea.Cmd {
-	return textarea.Blink
+	return tea.Batch(
+		textarea.Blink,
+		m.progress.Init(),
+	)
 }
 
 func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	var (
-		tiCmd tea.Cmd
-		vpCmd tea.Cmd
+		tiCmd   tea.Cmd
+		vpCmd   tea.Cmd
+		progCmd tea.Cmd
 	)
 
 	m.textarea, tiCmd = m.textarea.Update(msg)
 	m.viewport, vpCmd = m.viewport.Update(msg)
 
 	switch msg := msg.(type) {
+	case progressBar.TickMsg:
+
+		m.progress, progCmd = m.progress.Update(msg)
+		prog := fmt.Sprintf("%f value and seconds is %d", m.progress.Value, m.progress.Seconds)
+		database.WriteToDebugFile("TickMsg with values ->", prog)
+		return m, tea.Batch(tiCmd, vpCmd, progCmd)
 	case tea.KeyMsg:
 		switch msg.Type {
 		case tea.KeyCtrlC, tea.KeyEsc:
