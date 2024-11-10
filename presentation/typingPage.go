@@ -87,6 +87,12 @@ func initialModel(lesson models.Lesson) model {
 	prog := progress.New(progress.WithDefaultGradient())
 	prog.Width = 50
 
+	var progressBarModel progressBar.ProgressModel
+
+	if lesson.TimerCount != nil {
+		progressBarModel = progressBar.NewProgressModel(lesson.TimerCount)
+	}
+
 	m := model{
 		textarea:         ta,
 		prompt:           []string{},
@@ -102,7 +108,7 @@ func initialModel(lesson models.Lesson) model {
 		resultsStyle:     lipgloss.NewStyle().Foreground(lipgloss.Color("#f817b0")).Bold(true),
 		currentIndex:     0,
 		hasStartedTyping: false,
-		progress:         progressBar.NewProgressModel(),
+		progress:         progressBarModel,
 	}
 
 	if len(m.lesson.Content) > 0 {
