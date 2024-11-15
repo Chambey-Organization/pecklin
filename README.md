@@ -72,7 +72,7 @@ cd pecking
 go run main.go
 ```
 
-## Open issue and feature request [here](https://github.com/Chambey-Organization/pecklin/issues)!
+## Open issues and feature requests [here](https://github.com/Chambey-Organization/pecklin/issues)!
 
-### Join us on [Reddit](https://www.reddit.com/r/Pecklin/)
+### Join us on [Reddit](https://www.reddit.com/r/Pecklin/).
 
