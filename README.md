@@ -65,7 +65,7 @@ git clone https://github.com/Chambey-Organization/peckling
 ```
 
 ```bash
-cd peckling
+cd pecklin
 ```
 
 ```bash
