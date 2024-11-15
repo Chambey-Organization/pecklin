@@ -61,7 +61,7 @@ sudo apt install gcc
 If you haven't already cloned the repository, you can do so using the following command:
 
 ```bash
-git clone https://github.com/Chambey-Organization/peckling
+git clone https://github.com/Chambey-Organization/pecklin
 ```
 
 ```bash
