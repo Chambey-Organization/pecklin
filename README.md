@@ -42,7 +42,7 @@ The Pecklin project is in its’ early stage of developing a minimum viable prod
 
 ### Prerequisites
 
-Before running Pecking, ensure you have the following installed on your system:
+Before running Pecklin, ensure you have the following installed on your system:
 
 - [Go](https://golang.org/doc/install) (latest version recommended)
 - Git (optional, for cloning the repository)
