@@ -4,7 +4,7 @@ Welcome to the Pecklin project! We're excited to have you contribute to our touc
 
 ## Table of Contents
 
-1. [Code of Conduct](#code-of-conduct)
+1. [Code of Conduct](CODE_OF_CONDUCT.md)
 2. [Getting Started](#getting-started)
 3. [Reporting Issues](#reporting-issues)
 4. [Submitting Contributions](#submitting-contributions)
@@ -15,16 +15,12 @@ Welcome to the Pecklin project! We're excited to have you contribute to our touc
 9. [Documentation](#documentation)
 10. [License](#license)
 
-## Code of Conduct
-
-By participating in this project, you agree to abide by our [Code of Conduct](CODE_OF_CONDUCT.md). Be respectful and constructive in all communications.
-
 ## Getting Started
 
 1. **Fork the Repository**  
    Fork the repository to your GitHub account and clone it locally:
    ```bash
-   git clone https://github.com/your-username/pecklin.git
+   git clone https://github.com/Chambey-Organization/pecklin.git
    cd pecklin
    ```
 
@@ -43,7 +39,7 @@ By participating in this project, you agree to abide by our [Code of Conduct](CO
 
 ## Reporting Issues
 
-If you find a bug or have a suggestion, create an issue in the [Issues](https://github.com/your-username/pecklin/issues) tab. Provide as much detail as possible:
+If you find a bug or have a suggestion, create an issue in the [Issues](https://github.com/Chambey-Organization/pecklin/issues) tab. Provide as much detail as possible:
 - Steps to reproduce
 - Expected behavior
 - Actual behavior
@@ -77,7 +73,7 @@ If you find a bug or have a suggestion, create an issue in the [Issues](https://
 
 ## Coding Standards
 
-- Follow the [Go Code Review Comments](https://github.com/golang/go/wiki/CodeReviewComments).
+- Follow the [Go Code Review Comments](https://go.dev/wiki/CodeReviewComments).
 - Use `go fmt` to format your code:
   ```bash
   go fmt ./...
@@ -126,27 +122,27 @@ Added functionality to save typing session progress locally using JSON files.
 
 ## Documentation
 
-- Update documentation in the `docs/` folder for any new features.
+- Update documentation in the [docs](SOURCE_DOC.md) file for any new features.
 - If your changes impact the README or other user-facing files, update them accordingly.
 
 ### Project structure
 
 ```
-
-├── data/                              # Data access layer (local and remote).
-│   ├── local/                         # Local data management.
-│   │   └── database/                  # Database initialization and access logic.
-│   │       ├── dao.go                 # Interfaces for database operations.
-│   │       └── initializeDatabase.go  # Logic for initializing the database.
-│   └── remote/                        # Remote API interaction.
-│       └── remoteRepository.go        # Logic for accessing remote data sources.
-├── domain/                            # Core business logic and data models.
-│   └── models/                        # Domain models representing core entities.
-├── main.go                            # Application startup logic.
-├── pkg/                               # Public reusable packages for controllers and utilities.
-│   ├── controllers/                   # Controllers for managing application logic.
-│   └── utils/                         # Shared utilities for the project.
-├── presentation/                      # Presentation layer for UI or CLI interaction.
+    
+    ├── data/                              # Data access layer (local and remote).
+    │   ├── local/                         # Local data management.
+    │   │   └── database/                  # Database initialization and access logic.
+    │   │       ├── dao.go                 # Interfaces for database operations.
+    │   │       └── initializeDatabase.go  # Logic for initializing the database.
+    │   └── remote/                        # Remote API interaction.
+    │       └── remoteRepository.go        # Logic for accessing remote data sources.
+    ├── domain/                            # Core business logic and data models.
+    │   └── models/                        # Domain models representing core entities.
+    ├── main.go                            # Application startup logic.
+    ├── pkg/                               # Public reusable packages for controllers and utilities.
+    │   ├── controllers/                   # Controllers for managing application logic.
+    │   └── utils/                         # Shared utilities for the project.
+    ├── presentation/                      # Presentation layer for UI or CLI interaction.
 
 ```
 
