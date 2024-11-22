@@ -10,16 +10,29 @@ import (
 type TickMsg int
 
 type ProgressModel struct {
-	Progress progress.Model
-	Value    float64
-	Seconds  int
+	Progress   progress.Model
+	Value      float64
+	Seconds    int
+	TimerCount *uint
 }
 
-func NewProgressModel() ProgressModel {
+func NewProgressModel(timerCount *uint) ProgressModel {
+	var value float64
+	var seconds int
+
+	if timerCount != nil {
+		value = 1.0
+		seconds = int(*timerCount)
+	} else {
+		value = 0.0
+		seconds = 0
+	}
+
 	return ProgressModel{
-		Progress: progress.New(progress.WithDefaultGradient()),
-		Seconds:  60,
-		Value:    1.0, // Start from 60 seconds
+		Progress:   progress.New(progress.WithDefaultGradient()),
+		Seconds:    seconds,
+		Value:      value,
+		TimerCount: timerCount,
 	}
 }
 
@@ -34,11 +47,12 @@ func tick() tea.Cmd {
 }
 
 func (m ProgressModel) Update(msg tea.Msg) (ProgressModel, tea.Cmd) {
+
 	switch msg := msg.(type) {
 	case TickMsg:
-		if m.Seconds > 0 {
+		if m.Seconds > 0 && m.TimerCount != nil {
 			m.Seconds--
-			m.Value = float64(m.Seconds) / 60.0
+			m.Value = float64(m.Seconds) / float64(*m.TimerCount)
 		}
 		if m.Seconds == 0 {
 			return m, nil
@@ -56,7 +70,11 @@ func (m ProgressModel) Update(msg tea.Msg) (ProgressModel, tea.Cmd) {
 }
 
 func (m ProgressModel) View() string {
-	return fmt.Sprintf(
-		" Time left: %d seconds\n %s", m.Seconds, m.Progress.ViewAs(m.Value),
-	)
+	if m.TimerCount != nil {
+		return fmt.Sprintf(
+			" Time left: %d seconds\n %s", m.Seconds, m.Progress.ViewAs(m.Value),
+		)
+	}
+
+	return ""
 }
