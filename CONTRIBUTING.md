@@ -1,6 +1,6 @@
 # Contribution Guidelines for Pecklin
 
-Welcome to the Pecklin project! We're excited to have you contribute to our touch typing app. Whether you're fixing bugs, improving documentation, or adding new features, your contributions are greatly appreciated.
+Thanks for your interest in contributing to Pecklin. Please take into consideration that we are still in early stages of creating a minimum viable product.
 
 ## Table of Contents
 
