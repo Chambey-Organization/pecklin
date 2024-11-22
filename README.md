@@ -42,7 +42,7 @@ The Pecklin project is in its’ early stage of developing a minimum viable prod
 
 ### Prerequisites
 
-Before running Pecking, ensure you have the following installed on your system:
+Before running Pecklin, ensure you have the following installed on your system:
 
 - [Go](https://golang.org/doc/install) (latest version recommended)
 - Git (optional, for cloning the repository)
@@ -61,16 +61,18 @@ sudo apt install gcc
 If you haven't already cloned the repository, you can do so using the following command:
 
 ```bash
-git clone https://github.com/Chambey-Organization/pecking
+git clone https://github.com/Chambey-Organization/pecklin
 ```
 
 ```bash
-cd pecking
+cd pecklin
 ```
 
 ```bash
 go run main.go
 ```
 
+## Open issues and feature requests [here](https://github.com/Chambey-Organization/pecklin/issues)!
 
+### Join us on [Reddit](https://www.reddit.com/r/Pecklin/).
 
