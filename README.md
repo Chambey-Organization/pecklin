@@ -61,5 +61,5 @@ Checkout the [Contribution guidelines](CONTRIBUTING.md) to get started.
 
 ## Open issues and feature requests [here](https://github.com/Chambey-Organization/pecklin/issues)!
 
-### Join us on [Reddit](https://www.reddit.com/r/Pecklin/).
+### Follow us @ [Bluesky](@pecklin.bsky.social)
 
