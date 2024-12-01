@@ -136,7 +136,7 @@ Added functionality to save typing session progress locally using JSON files.
 
 ## Documentation
 
-- Update documentation in the [docs](SOURCE_DOC.md) file for any new features.
+- Update documentation in the [docs](DOCUMENTATION.md) file for any new features.
 - If your changes impact the README or other user-facing files, update them accordingly.
 
 ### Project structure

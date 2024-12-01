@@ -22,6 +22,11 @@ type (
 	errMsg error
 )
 
+var (
+	accuracy         float64
+	highlightedInput string
+)
+
 type model struct {
 	viewport         viewport.Model
 	prompt           []string
@@ -40,11 +45,6 @@ type model struct {
 	hasStartedTyping bool
 	progress         progressBar.ProgressModel
 }
-
-var (
-	accuracy         float64
-	highlightedInput string
-)
 
 func TypingPage(lesson models.Lesson) {
 	p := tea.NewProgram(initialModel(lesson))
@@ -164,8 +164,6 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				m.textarea.Reset()
 				m.textarea.Prompt = highlightedInput
 
-				typingProgress := float64(len(m.input)) / float64(len(prompt))
-				m.progress.Progress.SetPercent(typingProgress)
 			}
 		case tea.KeyEnter:
 			input := m.textAreaValue
@@ -181,7 +179,6 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			m.textarea.Blur()
 			m.viewport.GotoTop()
 			m.textarea.Focus()
-			m.textarea.Prompt = "> "
 
 			// reset the text area value to blank
 			m.textAreaValue = ""
@@ -226,8 +223,6 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			m.textarea.Placeholder = ""
 			m.textarea.Prompt = highlightedInput
 
-			typingProgress := float64(len(m.input)) / float64(len(prompt))
-			m.progress.Progress.SetPercent(typingProgress)
 		}
 
 	case errMsg:
