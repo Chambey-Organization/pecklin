@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"github.com/charmbracelet/lipgloss"
 	"github.com/stretchr/testify/assert"
-	"main.go/typingEngine"
 	"testing"
 )
 
