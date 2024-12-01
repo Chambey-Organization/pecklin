@@ -1,7 +1,7 @@
 # Pecklin
 ### The segue into the world of computer science 
 
-An open-source command line tool for practicing touch typing and programming, supported and developed by [Chambey](https://chambey.com/about/ "The Public Interest Technology Company") and open-source contributors.
+An open-source command line tool for practicing touch typing and programming, supported and developed by [Chambey](https://bsky.app/profile/chambey.org) and open-source contributors.
 
 #### Hunting & Pecklin
 Pecklin is derived from an idea meant to reduce the hunt and peck method of typing while learning to code.
@@ -37,4 +37,29 @@ The Pecklin project is in its’ early stage of developing a minimum viable prod
 
 [Charm](https://charm.sh/) - We build tools to make the command line glamorous.
 
-### [Donate with Crypto](https://commerce.coinbase.com/checkout/449022e9-3770-4093-a083-c5087a40c703)
+
+## Initialize the project
+#### Requirements
+- [Go](https://golang.org/doc/install) (latest version recommended)
+- Git (optional, for cloning the repository)
+- Install GCC tools
+
+Checkout the [Contribution guidelines](CONTRIBUTING.md) to get started.
+
+## Tech Stack
+### Core
+- 100% Golang
+
+### Testing 
+- Std Golang testing library 
+- [Testify](https://github.com/stretchr/testify) for assertions
+
+### Other Libraries
+- [Bubble Tea](https://github.com/charmbracelet/bubbletea) for cli styling
+- [Huh](https://github.com/charmbracelet/huh) for cli forms
+- [GoNavigation](https://github.com/CharlesMuchogo/GoNavigation) for navigation
+
+## Open issues and feature requests [here](https://github.com/Chambey-Organization/pecklin/issues)!
+
+### Follow us @ [Bluesky](https://bsky.app/profile/pecklin.bsky.social)
+

@@ -1,4 +1,4 @@
-package typingSpeed
+package utils
 
 import (
 	"strings"
