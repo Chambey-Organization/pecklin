@@ -10,8 +10,8 @@ import (
 )
 
 func FetchPractices() error {
-	
-	response, err := http.Get("https://charlesmuchogo.com/api/practice")
+
+	response, err := http.Get("https://www.charlesmuchogo.com/api/practice")
 	if err != nil {
 		return fmt.Errorf("failed to get response: %v", err)
 	}
