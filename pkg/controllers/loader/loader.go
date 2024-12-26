@@ -7,6 +7,15 @@ import (
 	"github.com/charmbracelet/lipgloss"
 )
 
+var (
+	spinnerStyle = lipgloss.NewStyle().
+			Foreground(lipgloss.Color("205"))
+
+	largeTextStyle = lipgloss.NewStyle().
+			Foreground(lipgloss.Color("33")).
+			Bold(true)
+)
+
 type ErrMsg error
 
 type DataLoadedMsg struct{}
@@ -21,7 +30,7 @@ type Model struct {
 func InitialModel() Model {
 	s := spinner.New()
 	s.Spinner = spinner.Dot
-	s.Style = lipgloss.NewStyle().Foreground(lipgloss.Color("205"))
+	s.Style = spinnerStyle
 	return Model{Spinner: s}
 }
 
@@ -66,7 +75,9 @@ func (m Model) View() string {
 	if m.Err != nil {
 		return m.Err.Error()
 	}
-	str := fmt.Sprintf("\n\n %s Setting up your workspace, please wait...\n\n", m.Spinner.View())
+	str := fmt.Sprintf("\n%s %s", m.Spinner.View(), largeTextStyle.Render("Setting up your workspace, please wait..."))
+
+	/** str := fmt.Sprintf("\n\n %s Setting up your workspace, please wait...\n\n", m.Spinner.View()) */
 	if m.Quitting {
 		return str + "\n"
 	}

@@ -10,6 +10,7 @@ import (
 	"main.go/pkg/utils"
 	"main.go/presentation"
 	"os"
+	"time"
 )
 
 func main() {
@@ -19,6 +20,7 @@ func main() {
 	p := tea.NewProgram(m)
 	go func() {
 		err := remote.FetchPractices()
+		time.Sleep(5 * time.Second)
 		if err != nil {
 			p.Send(loader.DataLoadedMsg{})
 			return
