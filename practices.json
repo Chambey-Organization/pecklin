@@ -1,0 +1,374 @@
+{
+  "message": "Practices fetched successfully",
+  "practices": [
+    {
+      "id": 1,
+      "title": "Home Keys Practice",
+      "active": true,
+      "lessons": [
+        {
+          "id": 1,
+          "practiceID": 1,
+          "lessonTitle": "Home Keys - Practice 1",
+          "active": true,
+          "timerCount": null,
+          "content": [
+            {
+              "id": 1,
+              "prompt": "asdf asdf asdf"
+            },
+            {
+              "id": 2,
+              "prompt": "sadd sadd sadd"
+            },
+            {
+              "id": 3,
+              "prompt": "dass dass dass"
+            },
+            {
+              "id": 4,
+              "prompt": "sads sads sads"
+            },
+            {
+              "id": 5,
+              "prompt": "fads fads fads"
+            }
+          ]
+        },
+        {
+          "id": 2,
+          "practiceID": 1,
+          "lessonTitle": "Home Keys - Practice 2",
+          "active": true,
+          "timerCount": null,
+          "content": [
+            {
+              "id": 6,
+              "prompt": "jkl; jkl; jkl; jkl;"
+            },
+            {
+              "id": 7,
+              "prompt": "dadd dadd dadd"
+            },
+            {
+              "id": 8,
+              "prompt": "fasd fasd fasd"
+            },
+            {
+              "id": 9,
+              "prompt": "jads jads jads"
+            },
+            {
+              "id": 10,
+              "prompt": "laja laja laja"
+            }
+          ]
+        },
+        {
+          "id": 3,
+          "practiceID": 1,
+          "lessonTitle": "Home Keys - Practice 3",
+          "active": true,
+          "timerCount": null,
+          "content": [
+            {
+              "id": 11,
+              "prompt": "jljl jljl jljl"
+            },
+            {
+              "id": 12,
+              "prompt": "klkl klkl klkl"
+            },
+            {
+              "id": 13,
+              "prompt": "jlk jlk jlk"
+            },
+            {
+              "id": 14,
+              "prompt": "l;l;l; l;l;l;"
+            },
+            {
+              "id": 15,
+              "prompt": "jasd jasd jasd"
+            }
+          ]
+        },
+        {
+          "id": 4,
+          "practiceID": 1,
+          "lessonTitle": "Home Keys - Practice 4",
+          "active": true,
+          "timerCount": null,
+          "content": [
+            {
+              "id": 16,
+              "prompt": "kads kasd alkd"
+            },
+            {
+              "id": 17,
+              "prompt": "jlald kdka; dkal"
+            },
+            {
+              "id": 18,
+              "prompt": "as; as; as;"
+            },
+            {
+              "id": 19,
+              "prompt": "jass jass jass"
+            },
+            {
+              "id": 20,
+              "prompt": "las las las"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": 2,
+      "title": "Advanced Home Keys Practice",
+      "active": true,
+      "lessons": [
+        {
+          "id": 7,
+          "practiceID": 2,
+          "lessonTitle": "Advanced Keys - Practice 1",
+          "active": true,
+          "timerCount": null,
+          "content": [
+            {
+              "id": 31,
+              "prompt": "rfrf rfrf rfrf"
+            },
+            {
+              "id": 32,
+              "prompt": "fra fra fra fra"
+            },
+            {
+              "id": 33,
+              "prompt": "frad frad frad"
+            },
+            {
+              "id": 34,
+              "prompt": "sard sard sard"
+            },
+            {
+              "id": 35,
+              "prompt": "lark lark lark"
+            }
+          ]
+        },
+        {
+          "id": 8,
+          "practiceID": 2,
+          "lessonTitle": "Advanced Keys - Practice 2",
+          "active": true,
+          "timerCount": null,
+          "content": [
+            {
+              "id": 36,
+              "prompt": "juju juju juju"
+            },
+            {
+              "id": 37,
+              "prompt": "sud sud sud"
+            },
+            {
+              "id": 38,
+              "prompt": "hug hug hug"
+            },
+            {
+              "id": 39,
+              "prompt": "lug lug lug"
+            },
+            {
+              "id": 40,
+              "prompt": "juk juk juk"
+            }
+          ]
+        },
+        {
+          "id": 9,
+          "practiceID": 2,
+          "lessonTitle": "Advanced Keys - Practice 3",
+          "active": true,
+          "timerCount": null,
+          "content": [
+            {
+              "id": 41,
+              "prompt": "kill kill kill"
+            },
+            {
+              "id": 42,
+              "prompt": "dill dill dill"
+            },
+            {
+              "id": 43,
+              "prompt": "seek seek seek"
+            },
+            {
+              "id": 44,
+              "prompt": "seal seal seal"
+            },
+            {
+              "id": 45,
+              "prompt": "keel keel keel"
+            }
+          ]
+        },
+        {
+          "id": 10,
+          "practiceID": 2,
+          "lessonTitle": "Advanced Keys - Practice 4",
+          "active": true,
+          "timerCount": null,
+          "content": [
+            {
+              "id": 46,
+              "prompt": "date date date"
+            },
+            {
+              "id": 47,
+              "prompt": "raft raft raft"
+            },
+            {
+              "id": 48,
+              "prompt": "fat fat fat"
+            },
+            {
+              "id": 49,
+              "prompt": "trail trail trail"
+            },
+            {
+              "id": 50,
+              "prompt": "hit hit hit"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": 3,
+      "title": "Expert Typing Practice",
+      "active": true,
+      "lessons": [
+        {
+          "id": 15,
+          "practiceID": 3,
+          "lessonTitle": "Expert Keys - Practice 1",
+          "active": true,
+          "timerCount": null,
+          "content": [
+            {
+              "id": 71,
+              "prompt": "jnjn jnjn jnjn"
+            },
+            {
+              "id": 72,
+              "prompt": "njnj njnj njnj"
+            },
+            {
+              "id": 73,
+              "prompt": "nickle nickle"
+            },
+            {
+              "id": 74,
+              "prompt": "numeral numeral"
+            },
+            {
+              "id": 75,
+              "prompt": "nellie nellie"
+            }
+          ]
+        },
+        {
+          "id": 16,
+          "practiceID": 3,
+          "lessonTitle": "Expert Keys - Practice 2",
+          "active": true,
+          "timerCount": null,
+          "content": [
+            {
+              "id": 76,
+              "prompt": "nine nine nine"
+            },
+            {
+              "id": 77,
+              "prompt": "ninety ninety"
+            },
+            {
+              "id": 78,
+              "prompt": "raja raja raja"
+            },
+            {
+              "id": 79,
+              "prompt": "krass krass krass"
+            },
+            {
+              "id": 80,
+              "prompt": "lark lark lark"
+            }
+          ]
+        },
+        {
+          "id": 17,
+          "practiceID": 3,
+          "lessonTitle": "Expert Keys - Practice 3",
+          "active": true,
+          "timerCount": null,
+          "content": [
+            {
+              "id": 81,
+              "prompt": "juju juju juju"
+            },
+            {
+              "id": 82,
+              "prompt": "dud dud dud"
+            },
+            {
+              "id": 83,
+              "prompt": "lug lug lug"
+            },
+            {
+              "id": 84,
+              "prompt": "hug hug hug"
+            },
+            {
+              "id": 85,
+              "prompt": "sud sud sud"
+            }
+          ]
+        },
+        {
+          "id": 18,
+          "practiceID": 3,
+          "lessonTitle": "Expert Keys - Practice 4",
+          "active": true,
+          "timerCount": null,
+          "content": [
+            {
+              "id": 86,
+              "prompt": "aid aid aid"
+            },
+            {
+              "id": 87,
+              "prompt": "sid sid sid"
+            },
+            {
+              "id": 88,
+              "prompt": "lids lids lids"
+            },
+            {
+              "id": 89,
+              "prompt": "kids kids kids"
+            },
+            {
+              "id": 90,
+              "prompt": "hid hid hid"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
