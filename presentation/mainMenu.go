@@ -43,9 +43,7 @@ func MainMenu() {
 	)
 
 	prog := tea.NewProgram(pageModel{form: form, action: func() {
-		//if selectedOption != "3" {
 		navigateAfterValidation()
-		//}
 	}})
 
 	if err := prog.Start(); err != nil {

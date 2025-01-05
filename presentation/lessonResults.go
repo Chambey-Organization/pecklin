@@ -11,15 +11,19 @@ import (
 	"github.com/charmbracelet/lipgloss"
 )
 
-type resultsTableModel struct {
+var baseStyle = lipgloss.NewStyle().
+	BorderStyle(lipgloss.NormalBorder()).
+	BorderForeground(lipgloss.Color("240"))
+
+type tableModel struct {
 	table table.Model
 }
 
-func (m resultsTableModel) Init() tea.Cmd {
+func (m tableModel) Init() tea.Cmd {
 	return nil
 }
 
-func (m resultsTableModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
+func (m tableModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	var cmd tea.Cmd
 	switch msg := msg.(type) {
 	case tea.KeyMsg:
@@ -34,38 +38,35 @@ func (m resultsTableModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	return m, cmd
 }
 
-func (m resultsTableModel) View() string {
-	title := lipgloss.NewStyle().Bold(true).Foreground(lipgloss.Color("33")).Render(" Results")
-	return "\n" + title + "\n\n" + baseStyle.Render(m.table.View()) + "\n "
+func (m tableModel) View() string {
+	title := lipgloss.NewStyle().Bold(true).Foreground(lipgloss.Color("33")).Render(" Results for your typing Lesson!")
+	return "\n" + title + "\n\n" + baseStyle.Render(m.table.View()) + "\n  "
 }
 
-func ResultsPage() {
+func LessonResultsPage(id uint) {
 
-	results := database.GetResults()
+	result, err := database.GetLessonResultResult(id)
 
-	columns := []table.Column{
-		{Title: "No.", Width: 5},
-		{Title: "Lesson", Width: 15},
-		{Title: "Latest Speed", Width: 13},
-		{Title: "BestSpeed", Width: 10},
-		{Title: "Accuracy", Width: 10},
+	if err != nil {
+		tea.Println("Lesson not found")
 	}
 
-	var rows []table.Row
-	for index, result := range results {
-		rows = append(rows, table.Row{
-			fmt.Sprintf("%d.", index+1),
-			result.Lesson.Title,
-			fmt.Sprintf("%.2f WPM", result.CurrentSpeed),
-			fmt.Sprintf("%.2f WPM", result.BestSpeed),
-			fmt.Sprintf("%.2f%%", result.Accuracy),
-		})
+	columns := []table.Column{
+		{Title: "Lesson", Width: 15},
+		{Title: "Current Speed", Width: 30},
+	}
+
+	rows := []table.Row{
+		{"Lesson", result.Lesson.Title},
+		{"Current Speed", fmt.Sprintf("%.2f WPM", result.CurrentSpeed)},
+		{"Best Speed", fmt.Sprintf("%.2f WPM", result.BestSpeed)},
+		{"Accuracy", fmt.Sprintf("%.2f%%", result.Accuracy)},
 	}
 
 	t := table.New(
 		table.WithColumns(columns),
 		table.WithRows(rows),
-		table.WithHeight(15),
+		table.WithHeight(5),
 	)
 
 	s := table.DefaultStyles()
@@ -80,7 +81,7 @@ func ResultsPage() {
 		Bold(false)
 	t.SetStyles(s)
 
-	m := resultsTableModel{t}
+	m := tableModel{t}
 	if _, err := tea.NewProgram(m).Run(); err != nil {
 		fmt.Println("Error running program:", err)
 		os.Exit(1)

@@ -39,6 +39,12 @@ func GetResults() []models.Progress {
 	return allProgress
 }
 
+func GetLessonResultResult(id uint) (models.Progress, error) {
+	var result models.Progress
+	err := DB.Preload("Lesson").Where("lesson_id = ?", id).Find(&result)
+	return result, err.Error
+}
+
 func InsertPractices(practices []models.Practice) {
 	if len(practices) > 0 {
 		DB.Delete(&models.Practice{})

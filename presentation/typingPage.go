@@ -13,6 +13,7 @@ import (
 	"main.go/data/local/database"
 	"main.go/domain/models"
 	"main.go/pkg/controllers/progressBar"
+	"main.go/pkg/controllers/typing"
 	"strings"
 	"time"
 )
@@ -52,8 +53,10 @@ func TypingPage(lesson models.Lesson) {
 	if finalModel, err := p.Run(); err != nil {
 		log.Fatal(err)
 	} else if lessonModel, ok := finalModel.(model); ok && lessonModel.err == nil {
-		//time.Sleep(time.Second * 7)
 		navigation.Navigator.Pop()
+		navigation.Navigator.Navigate(func() {
+			LessonResultsPage(lesson.ID)
+		})
 	}
 }
 
@@ -201,6 +204,13 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 				m.input = fmt.Sprintf("%s %s", m.input, prompt)
 			} else {
+				err := typing.SaveTypingSpeed(m.startTime, m.input, m.lesson, accuracy)
+				if err != nil {
+					m.err = err
+					database.WriteToDebugFile("An error happened", err.Error())
+					return m, nil
+				}
+
 				m.textarea.Prompt = " "
 				return m, tea.Quit
 			}
@@ -219,7 +229,7 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			highlightedInput, _, placeHolder := m.CompareAndHighlightInput(m.textAreaValue, prompt)
 			m.textarea.Reset()
 			m.textarea.Placeholder = placeHolder
-			
+
 			m.textarea.Prompt = "> " + highlightedInput
 
 			typingProgress := float64(len(m.input)) / float64(len(prompt))
