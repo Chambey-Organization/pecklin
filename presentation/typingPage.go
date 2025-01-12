@@ -113,7 +113,7 @@ func initialModel(lesson models.Lesson) model {
 		progress:         progressBarModel,
 	}
 
-	if len(m.lesson.Content) > 0 {
+	/*if len(m.lesson.Content) > 0 {
 		m.progress.Progress.Width = 50
 		prompt := m.lesson.Content[m.currentIndex].Prompt
 		m.input = prompt
@@ -122,6 +122,20 @@ func initialModel(lesson models.Lesson) model {
 		m.viewport.SetContent(m.lesson.Title)
 		m.startTime = time.Now()
 
+	} */
+
+	if len(m.lesson.Content) > 0 {
+		m.progress.Progress.Width = 50
+		if m.currentIndex < len(m.lesson.Content) {
+			prompt := m.lesson.Content[m.currentIndex].Prompt
+			m.input = prompt
+			m.textarea.Placeholder = prompt
+			m.prompt = " " + m.promptStyle.Render(prompt)
+		}
+		m.viewport.SetContent(m.lesson.Title)
+		m.startTime = time.Now()
+	} else {
+		m.textarea.Placeholder = "No prompts available"
 	}
 
 	return m
@@ -210,7 +224,6 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 					database.WriteToDebugFile("An error happened saving the lesson", err.Error())
 					return m, tea.Quit
 				}
-				m.textarea.Placeholder = " "
 
 				return m, tea.Quit
 			}
@@ -278,5 +291,6 @@ func (m model) CompareAndHighlightInput(input string, prompt string) (string, fl
 
 	accuracy := float64(correctCount) / float64(len(prompt)) * 100
 	m.totalAccuracy = accuracy
+
 	return highlightedInput.String(), accuracy, remainingPrompt
 }

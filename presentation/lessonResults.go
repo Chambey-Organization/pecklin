@@ -52,8 +52,8 @@ func LessonResultsPage(id uint) {
 	}
 
 	columns := []table.Column{
-		{Title: "Lesson", Width: 30},
-		{Title: "Current Speed", Width: 30},
+		{Title: "Lesson", Width: 15},
+		{Title: "Current Speed", Width: len(result.Lesson.Title) + 1},
 	}
 
 	rows := []table.Row{
