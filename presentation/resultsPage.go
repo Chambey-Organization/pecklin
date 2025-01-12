@@ -43,9 +43,18 @@ func ResultsPage() {
 
 	results := database.GetResults()
 
+	maxTitleLength := 0
+	for _, result := range results {
+		if len(result.Lesson.Title) > maxTitleLength {
+			maxTitleLength = len(result.Lesson.Title)
+		}
+	}
+
+	lessonColumnWidth := maxTitleLength + 2
+
 	columns := []table.Column{
 		{Title: "No.", Width: 5},
-		{Title: "Lesson", Width: 15},
+		{Title: "Lesson", Width: lessonColumnWidth},
 		{Title: "Latest Speed", Width: 13},
 		{Title: "BestSpeed", Width: 10},
 		{Title: "Accuracy", Width: 10},
@@ -62,10 +71,12 @@ func ResultsPage() {
 		})
 	}
 
+	tableHeight := len(rows) + 1
+
 	t := table.New(
 		table.WithColumns(columns),
 		table.WithRows(rows),
-		table.WithHeight(15),
+		table.WithHeight(tableHeight), // Set the height dynamically
 	)
 
 	s := table.DefaultStyles()

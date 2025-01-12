@@ -191,12 +191,12 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			// reset the text area value to blank
 			m.textAreaValue = ""
 			//Reintroduce the placeholder
-			m.textarea.Placeholder = m.input
 
 			m.currentIndex++
 			if m.currentIndex < len(m.prompts) {
 
 				prompt := m.prompts[m.currentIndex].Prompt
+				m.textarea.Placeholder = prompt
 				typingProgress := float64(len(input)) / float64(len(prompt))
 				m.progress.Progress.SetPercent(typingProgress)
 
@@ -204,14 +204,14 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 				m.input = fmt.Sprintf("%s %s", m.input, prompt)
 			} else {
-				err := typing.SaveTypingSpeed(m.startTime, m.input, m.lesson, accuracy)
-				if err != nil {
-					m.err = err
-					database.WriteToDebugFile("An error happened", err.Error())
-					return m, nil
-				}
 
-				m.textarea.Prompt = " "
+				if err := typing.SaveTypingSpeed(m.startTime, m.input, m.lesson, accuracy); err != nil {
+					m.err = err
+					database.WriteToDebugFile("An error happened saving the lesson", err.Error())
+					return m, tea.Quit
+				}
+				m.textarea.Placeholder = " "
+
 				return m, tea.Quit
 			}
 		}
