@@ -3,14 +3,14 @@ package remote
 import (
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
 	"main.go/data/local/database"
 	"main.go/domain/models"
-	"net/http"
 	"os"
 )
 
 func FetchPractices() error {
+
+	/* <p>For now we work with the local json folder</p>
 
 	response, err := http.Get("http://13.244.41.201:8000/api/practice")
 	if err != nil {
@@ -33,7 +33,9 @@ func FetchPractices() error {
 	}
 
 	database.InsertPractices(getPracticeDTO.Practices)
-	return nil
+	*/
+
+	return readPracticesFromFile()
 }
 
 func readPracticesFromFile() error {

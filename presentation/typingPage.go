@@ -13,6 +13,7 @@ import (
 	"main.go/data/local/database"
 	"main.go/domain/models"
 	"main.go/pkg/controllers/progressBar"
+	"main.go/pkg/controllers/typing"
 	"strings"
 	"time"
 )
@@ -52,8 +53,10 @@ func TypingPage(lesson models.Lesson) {
 	if finalModel, err := p.Run(); err != nil {
 		log.Fatal(err)
 	} else if lessonModel, ok := finalModel.(model); ok && lessonModel.err == nil {
-		//time.Sleep(time.Second * 7)
 		navigation.Navigator.Pop()
+		navigation.Navigator.Navigate(func() {
+			LessonResultsPage(lesson.ID)
+		})
 	}
 }
 
@@ -112,13 +115,16 @@ func initialModel(lesson models.Lesson) model {
 
 	if len(m.lesson.Content) > 0 {
 		m.progress.Progress.Width = 50
-		prompt := m.lesson.Content[m.currentIndex].Prompt
-		m.input = prompt
-		m.textarea.Placeholder = prompt
-		m.prompt = " " + m.promptStyle.Render(prompt)
+		if m.currentIndex < len(m.lesson.Content) {
+			prompt := m.lesson.Content[m.currentIndex].Prompt
+			m.input = prompt
+			m.textarea.Placeholder = prompt
+			m.prompt = " " + m.promptStyle.Render(prompt)
+		}
 		m.viewport.SetContent(m.lesson.Title)
 		m.startTime = time.Now()
-
+	} else {
+		m.textarea.Placeholder = "No prompts available"
 	}
 
 	return m
@@ -188,12 +194,12 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			// reset the text area value to blank
 			m.textAreaValue = ""
 			//Reintroduce the placeholder
-			m.textarea.Placeholder = m.input
 
 			m.currentIndex++
 			if m.currentIndex < len(m.prompts) {
 
 				prompt := m.prompts[m.currentIndex].Prompt
+				m.textarea.Placeholder = prompt
 				typingProgress := float64(len(input)) / float64(len(prompt))
 				m.progress.Progress.SetPercent(typingProgress)
 
@@ -201,7 +207,13 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 				m.input = fmt.Sprintf("%s %s", m.input, prompt)
 			} else {
-				m.textarea.Prompt = " "
+
+				if err := typing.SaveTypingSpeed(m.startTime, m.input, m.lesson, accuracy); err != nil {
+					m.err = err
+					database.WriteToDebugFile("An error happened saving the lesson", err.Error())
+					return m, tea.Quit
+				}
+
 				return m, tea.Quit
 			}
 		}
@@ -219,7 +231,7 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			highlightedInput, _, placeHolder := m.CompareAndHighlightInput(m.textAreaValue, prompt)
 			m.textarea.Reset()
 			m.textarea.Placeholder = placeHolder
-			
+
 			m.textarea.Prompt = "> " + highlightedInput
 
 			typingProgress := float64(len(m.input)) / float64(len(prompt))
@@ -268,5 +280,6 @@ func (m model) CompareAndHighlightInput(input string, prompt string) (string, fl
 
 	accuracy := float64(correctCount) / float64(len(prompt)) * 100
 	m.totalAccuracy = accuracy
+
 	return highlightedInput.String(), accuracy, remainingPrompt
 }
