@@ -28,6 +28,22 @@ func (m resultsTableModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			tea.Println("clicked on exit")
 			navigation.Navigator.Pop()
 			return m, tea.Quit
+
+		case "enter":
+			// Get the selected row index
+			selectedIndex := m.table.Cursor() // Cursor gives the index of the selected row
+			results := database.GetResults()  // Fetch the results (ensure this matches the rows in the table)
+
+			if selectedIndex >= 0 && selectedIndex < len(results) {
+				selectedLesson := results[selectedIndex].Lesson
+				navigation.Navigator.Navigate(func() {
+					LessonResultsPage(selectedLesson.ID)
+				})
+			} else {
+				fmt.Println("Invalid selection")
+			}
+
+			return m, tea.Quit
 		}
 	}
 	m.table, cmd = m.table.Update(msg)
@@ -86,8 +102,7 @@ func ResultsPage() {
 		BorderBottom(true).
 		Bold(false)
 	s.Selected = s.Selected.
-		Foreground(lipgloss.Color("229")).
-		Background(lipgloss.Color("57")).
+		Foreground(lipgloss.Color("#53C2C5")).
 		Bold(false)
 	t.SetStyles(s)
 

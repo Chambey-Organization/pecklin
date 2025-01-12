@@ -113,17 +113,6 @@ func initialModel(lesson models.Lesson) model {
 		progress:         progressBarModel,
 	}
 
-	/*if len(m.lesson.Content) > 0 {
-		m.progress.Progress.Width = 50
-		prompt := m.lesson.Content[m.currentIndex].Prompt
-		m.input = prompt
-		m.textarea.Placeholder = prompt
-		m.prompt = " " + m.promptStyle.Render(prompt)
-		m.viewport.SetContent(m.lesson.Title)
-		m.startTime = time.Now()
-
-	} */
-
 	if len(m.lesson.Content) > 0 {
 		m.progress.Progress.Width = 50
 		if m.currentIndex < len(m.lesson.Content) {

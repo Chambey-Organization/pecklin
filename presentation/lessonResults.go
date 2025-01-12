@@ -66,6 +66,7 @@ func LessonResultsPage(id uint) {
 	t := table.New(
 		table.WithColumns(columns),
 		table.WithRows(rows),
+		table.WithFocused(true),
 		table.WithHeight(5),
 	)
 
@@ -76,8 +77,7 @@ func LessonResultsPage(id uint) {
 		BorderBottom(true).
 		Bold(false)
 	s.Selected = s.Selected.
-		Foreground(lipgloss.Color("229")).
-		Background(lipgloss.Color("57")).
+		Foreground(lipgloss.Color("#53C2C5")).
 		Bold(false)
 	t.SetStyles(s)
 
