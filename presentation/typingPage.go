@@ -27,6 +27,7 @@ type model struct {
 	input            string
 	textAreaValue    string
 	textAreaInput    string
+	placeHolder      string
 	textarea         textarea.Model
 	titleStyle       lipgloss.Style
 	promptStyle      lipgloss.Style
@@ -77,6 +78,7 @@ func initialModel(lesson models.Lesson) model {
 		err:              nil,
 		lesson:           &lesson,
 		textAreaInput:    "",
+		placeHolder:      "",
 		prompts:          lesson.Content,
 		titleStyle:       lipgloss.NewStyle().Foreground(lipgloss.Color("#211efb")).Bold(true),
 		promptStyle:      lipgloss.NewStyle().Foreground(lipgloss.Color("#53C2C5")).Bold(true),
@@ -91,13 +93,13 @@ func initialModel(lesson models.Lesson) model {
 		if m.currentIndex < len(m.lesson.Content) {
 			prompt := m.lesson.Content[m.currentIndex].Prompt
 			m.input = prompt
-			m.textarea.Placeholder = prompt
+			m.placeHolder = prompt
 			m.prompt = " " + m.promptStyle.Render(prompt)
 		}
 		m.viewport.SetContent(m.lesson.Title)
 		m.startTime = time.Now()
 	} else {
-		m.textarea.Placeholder = "No prompts available"
+		m.placeHolder = "No prompts available"
 	}
 
 	return m
@@ -140,7 +142,7 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				highlightedInput, _, placeHolder := m.CompareAndHighlightInput(m.textAreaValue, prompt)
 				m.textarea.Reset()
 				m.textarea.Prompt = "> " + highlightedInput
-				m.textarea.Placeholder = placeHolder
+				m.placeHolder = placeHolder
 				m.textAreaInput = highlightedInput
 				database.WriteToDebugFile("Placeholder", placeHolder)
 				typingProgress := float64(len(m.input)) / float64(len(prompt))
@@ -162,18 +164,21 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			m.viewport.GotoTop()
 			m.textarea.Focus()
 			m.textarea.Prompt = "> "
-			m.textAreaInput = ""
 			m.textAreaValue = ""
+			m.textAreaInput = ""
+			m.placeHolder = ""
 
 			m.currentIndex++
 			if m.currentIndex < len(m.prompts) {
 				prompt := m.prompts[m.currentIndex].Prompt
-				m.textarea.Placeholder = prompt
+				m.placeHolder = prompt
+
 				typingProgress := float64(len(input)) / float64(len(prompt))
 				m.progress.Progress.SetPercent(typingProgress)
 				m.prompt = " " + m.promptStyle.Render(prompt)
 				m.input = fmt.Sprintf("%s %s", m.input, prompt)
 			} else {
+
 				if err := typing.SaveTypingSpeed(m.startTime, m.input, m.lesson, m.totalAccuracy); err != nil {
 					m.err = err
 					database.WriteToDebugFile("An error happened saving the lesson", err.Error())
@@ -190,7 +195,7 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			prompt := m.prompts[m.currentIndex].Prompt
 			highlightedInput, _, placeHolder := m.CompareAndHighlightInput(m.textAreaValue, prompt)
 			m.textarea.Reset()
-			m.textarea.Placeholder = placeHolder
+			m.placeHolder = placeHolder
 			m.textAreaInput = highlightedInput
 			m.textarea.Prompt = "> " + highlightedInput
 			typingProgress := float64(len(m.input)) / float64(len(prompt))
@@ -206,19 +211,15 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 }
 
 func (m model) View() string {
+
 	greyStyle := lipgloss.NewStyle().Foreground(lipgloss.Color("240")) // Adjust color code as needed
 
-	displayText := m.textAreaInput
-	if len(m.textAreaValue) < len(m.prompts[m.currentIndex].Prompt) {
-		remainingPlaceholder := m.prompts[m.currentIndex].Prompt[len(m.textAreaValue):]
-
-		displayText += greyStyle.Render(remainingPlaceholder)
-	}
+	displayText := m.textAreaInput + greyStyle.Render(m.placeHolder)
 
 	return fmt.Sprintf(
 		"%s\n\n%s\n\n%s\n\n%s",
 		m.viewport.View(),
-		"> "+displayText,
+		"> "+displayText, // Display the text with styles applied
 		m.progress.View(),
 		" (Press esc to exit)",
 	) + "\n"
