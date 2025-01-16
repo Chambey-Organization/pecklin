@@ -4,7 +4,6 @@ import (
 	"errors"
 	"fmt"
 	"github.com/CharlesMuchogo/GoNavigation/navigation"
-	"github.com/charmbracelet/bubbles/progress"
 	"github.com/charmbracelet/bubbles/textarea"
 	"github.com/charmbracelet/bubbles/viewport"
 	tea "github.com/charmbracelet/bubbletea"
@@ -22,17 +21,13 @@ type (
 	errMsg error
 )
 
-var (
-	accuracy         float64
-	highlightedInput string
-	placeholder      string
-)
-
 type model struct {
 	viewport         viewport.Model
 	prompt           string
 	input            string
 	textAreaValue    string
+	textAreaInput    string
+	placeHolder      string
 	textarea         textarea.Model
 	titleStyle       lipgloss.Style
 	promptStyle      lipgloss.Style
@@ -63,31 +58,13 @@ func TypingPage(lesson models.Lesson) {
 func initialModel(lesson models.Lesson) model {
 	ta := textarea.New()
 	ta.Focus()
-
 	ta.Prompt = " > "
-
 	ta.SetWidth(100)
 	ta.SetHeight(1)
-
 	ta.FocusedStyle.CursorLine = lipgloss.NewStyle()
-
 	ta.ShowLineNumbers = false
 
-	var titleStyle = lipgloss.NewStyle().Bold(true).Foreground(lipgloss.Color("#211efb"))
-	var input []string
-
-	titleText := fmt.Sprintf(" Welcome to lesson %s", lesson.Title)
-	input = append(input)
-	title := fmt.Sprintf(titleStyle.Render(titleText))
-
-	vp := viewport.New(100, 5)
-
-	vp.SetContent(titleStyle.Render(title))
-
 	ta.KeyMap.InsertNewline.SetEnabled(false)
-
-	prog := progress.New(progress.WithDefaultGradient())
-	prog.Width = 50
 
 	var progressBarModel progressBar.ProgressModel
 
@@ -97,13 +74,11 @@ func initialModel(lesson models.Lesson) model {
 
 	m := model{
 		textarea:         ta,
-		prompt:           "",
-		viewport:         vp,
+		viewport:         viewport.New(100, 5),
 		err:              nil,
-		input:            "",
-		textAreaValue:    "",
-		totalAccuracy:    0,
 		lesson:           &lesson,
+		textAreaInput:    "",
+		placeHolder:      "",
 		prompts:          lesson.Content,
 		titleStyle:       lipgloss.NewStyle().Foreground(lipgloss.Color("#211efb")).Bold(true),
 		promptStyle:      lipgloss.NewStyle().Foreground(lipgloss.Color("#53C2C5")).Bold(true),
@@ -118,13 +93,13 @@ func initialModel(lesson models.Lesson) model {
 		if m.currentIndex < len(m.lesson.Content) {
 			prompt := m.lesson.Content[m.currentIndex].Prompt
 			m.input = prompt
-			m.textarea.Placeholder = prompt
+			m.placeHolder = prompt
 			m.prompt = " " + m.promptStyle.Render(prompt)
 		}
 		m.viewport.SetContent(m.lesson.Title)
 		m.startTime = time.Now()
 	} else {
-		m.textarea.Placeholder = "No prompts available"
+		m.placeHolder = "No prompts available"
 	}
 
 	return m
@@ -149,7 +124,6 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 	switch msg := msg.(type) {
 	case progressBar.TickMsg:
-
 		m.progress, progCmd = m.progress.Update(msg)
 		prog := fmt.Sprintf("%f value and seconds is %d", m.progress.Value, m.progress.Seconds)
 		database.WriteToDebugFile("TickMsg with values ->", prog)
@@ -165,22 +139,22 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				m.textAreaValue = m.textAreaValue[:len(m.textAreaValue)-1]
 				prompt := m.prompts[m.currentIndex].Prompt
 
-				// Compare the input and get the highlighted input
 				highlightedInput, _, placeHolder := m.CompareAndHighlightInput(m.textAreaValue, prompt)
 				m.textarea.Reset()
 				m.textarea.Prompt = "> " + highlightedInput
-
-				m.textarea.Placeholder = placeHolder
-
+				m.placeHolder = placeHolder
+				m.textAreaInput = highlightedInput
+				database.WriteToDebugFile("Placeholder", placeHolder)
 				typingProgress := float64(len(m.input)) / float64(len(prompt))
 				m.progress.Progress.SetPercent(typingProgress)
 			}
+			return m, nil
 		case tea.KeyEnter:
 			input := m.textAreaValue
 
 			if len(input) > 0 {
 				prompt := m.prompts[m.currentIndex].Prompt
-				highlightedInput, accuracy, placeholder = m.CompareAndHighlightInput(input, prompt)
+				highlightedInput, accuracy, _ := m.CompareAndHighlightInput(input, prompt)
 				m.prompt = fmt.Sprintf(" Input: %s (%.2f%% correct)\n", highlightedInput, accuracy)
 				m.totalAccuracy += accuracy
 			}
@@ -190,25 +164,22 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			m.viewport.GotoTop()
 			m.textarea.Focus()
 			m.textarea.Prompt = "> "
-
-			// reset the text area value to blank
 			m.textAreaValue = ""
-			//Reintroduce the placeholder
+			m.textAreaInput = ""
+			m.placeHolder = ""
 
 			m.currentIndex++
 			if m.currentIndex < len(m.prompts) {
-
 				prompt := m.prompts[m.currentIndex].Prompt
-				m.textarea.Placeholder = prompt
+				m.placeHolder = prompt
+
 				typingProgress := float64(len(input)) / float64(len(prompt))
 				m.progress.Progress.SetPercent(typingProgress)
-
 				m.prompt = " " + m.promptStyle.Render(prompt)
-
 				m.input = fmt.Sprintf("%s %s", m.input, prompt)
 			} else {
 
-				if err := typing.SaveTypingSpeed(m.startTime, m.input, m.lesson, accuracy); err != nil {
+				if err := typing.SaveTypingSpeed(m.startTime, m.input, m.lesson, m.totalAccuracy); err != nil {
 					m.err = err
 					database.WriteToDebugFile("An error happened saving the lesson", err.Error())
 					return m, tea.Quit
@@ -217,23 +188,16 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				return m, tea.Quit
 			}
 		}
-
 	default:
-		// Validate while typing for real-time feedback
 		input := m.textarea.Value()
-
-		m.textAreaValue = m.textAreaValue + input
-
+		m.textAreaValue += input
 		if len(input) > 0 && m.currentIndex < len(m.prompts) {
 			prompt := m.prompts[m.currentIndex].Prompt
-
-			// Compare the input and get the highlighted input
 			highlightedInput, _, placeHolder := m.CompareAndHighlightInput(m.textAreaValue, prompt)
 			m.textarea.Reset()
-			m.textarea.Placeholder = placeHolder
-
+			m.placeHolder = placeHolder
+			m.textAreaInput = highlightedInput
 			m.textarea.Prompt = "> " + highlightedInput
-
 			typingProgress := float64(len(m.input)) / float64(len(prompt))
 			m.progress.Progress.SetPercent(typingProgress)
 		}
@@ -247,18 +211,23 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 }
 
 func (m model) View() string {
+
+	greyStyle := lipgloss.NewStyle().Foreground(lipgloss.Color("240")) // Adjust color code as needed
+
+	displayText := m.textAreaInput + greyStyle.Render(m.placeHolder)
+
 	return fmt.Sprintf(
 		"%s\n\n%s\n\n%s\n\n%s",
 		m.viewport.View(),
-		m.textarea.View(),
+		"> "+displayText, // Display the text with styles applied
 		m.progress.View(),
 		" (Press esc to exit)",
 	) + "\n"
 }
 
 func (m model) CompareAndHighlightInput(input string, prompt string) (string, float64, string) {
-	correctStyle := lipgloss.NewStyle().Foreground(lipgloss.Color("2"))   // Green for correct characters
-	incorrectStyle := lipgloss.NewStyle().Foreground(lipgloss.Color("1")) // Red for incorrect characters
+	correctStyle := lipgloss.NewStyle().Foreground(lipgloss.Color("2"))
+	incorrectStyle := lipgloss.NewStyle().Foreground(lipgloss.Color("1"))
 
 	var highlightedInput strings.Builder
 	correctCount := 0
@@ -272,14 +241,11 @@ func (m model) CompareAndHighlightInput(input string, prompt string) (string, fl
 		}
 	}
 
-	// Add the remaining characters from the prompt
 	remainingPrompt := ""
 	if len(prompt) > len(input) {
 		remainingPrompt = prompt[len(input):]
 	}
 
 	accuracy := float64(correctCount) / float64(len(prompt)) * 100
-	m.totalAccuracy = accuracy
-
 	return highlightedInput.String(), accuracy, remainingPrompt
 }
